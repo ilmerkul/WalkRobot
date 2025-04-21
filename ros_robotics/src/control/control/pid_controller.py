@@ -28,10 +28,10 @@ class PIDController:
         self.output = 0.0
 
     def update(self, feedback_value: float, current_time=None):
-        current_time = time.time() if current_time is None else current_time
+        self.current_time = time.time() if current_time is None else current_time
         error = self.SetPoint - feedback_value
 
-        delta_time = current_time - self.last_time
+        delta_time = self.current_time - self.last_time
         delta_error = error - self.last_error
 
         if delta_time > self.sample_time:
