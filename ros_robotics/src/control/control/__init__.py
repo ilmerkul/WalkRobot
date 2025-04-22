@@ -1,3 +1,8 @@
+from .gpattern_generator import GPGenerator
+from .inverse_kinematics import InverseKinematics
 from .observation_publisher import ObservationPublisher
-from .planner_subsriber import MinimalSubscriber
 from .pid_controller import PIDController
+from .planner_subsriber import PlannerSubscriber
+
+__all__ = ['PIDController', 'PlannerSubscriber', 'GPGenerator',
+           'InverseKinematics', 'ObservationPublisher']

@@ -25,7 +25,6 @@ class GPGenerator:
         self.teta_prev = 0.0
         self.phi_prev = 0.0
 
-
     def update(self, current_time=None):
         self.current_time = current_time if current_time is not None else time.time()
         t = self.current_time - self.last_time
@@ -37,7 +36,6 @@ class GPGenerator:
 
         self.teta = self.omega * t + self.teta_prev
         self.phi = self.xi * t + self.phi_prev
-
 
     def modulate(self, mu: float, omega: float, xi: float, current_time=None):
         self.current_time = current_time if current_time is not None else time.time()

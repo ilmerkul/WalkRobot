@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-
 from std_msgs.msg import String
 
 
@@ -25,7 +24,7 @@ def main(args=None):
     minimal_subscriber = PlannerSubscriber()
 
     rclpy.spin(minimal_subscriber)
-    
+
     minimal_subscriber.destroy_node()
     rclpy.shutdown()
 

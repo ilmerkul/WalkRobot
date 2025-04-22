@@ -3,7 +3,7 @@ import time
 
 class PIDController:
     def __init__(self, Kp: float = 5.0, Ki: float = 3.0, Kd: float = 3.0, current_time=None):
-        
+
         self.Kp = Kp
         self.Ki = Ki
         self.Kd = Kd
@@ -52,7 +52,7 @@ class PIDController:
             self.last_error = error
 
             self.output = self.PTerm + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
-    
+
     def setKp(self, proportional_gain):
         self.Kp = proportional_gain
 
@@ -67,4 +67,3 @@ class PIDController:
 
     def setSampleTime(self, sample_time):
         self.sample_time = sample_time
-        
