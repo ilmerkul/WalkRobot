@@ -1,11 +1,12 @@
-import torch.nn as nn
-import torch
-import gym
-import numpy as np
-from torch.distributions import Normal
-import matplotlib.pyplot as plt
-import random
 import os
+import random
+
+import gym
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torch.nn as nn
+from torch.distributions import Normal
 
 ENV_NAME = "BipedalWalker-v3"
 environments_count = 20
