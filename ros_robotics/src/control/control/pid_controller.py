@@ -2,7 +2,9 @@ import time
 
 
 class PIDController:
-    def __init__(self, Kp: float = 5.0, Ki: float = 3.0, Kd: float = 3.0, current_time=None):
+    def __init__(
+        self, Kp: float = 5.0, Ki: float = 3.0, Kd: float = 3.0, current_time=None
+    ):
 
         self.Kp = Kp
         self.Ki = Ki
@@ -17,9 +19,9 @@ class PIDController:
     def clear(self):
         self.SetPoint = 0.0
 
-        self.PTerm = 0.0
-        self.ITerm = 0.0
-        self.DTerm = 0.0
+        self.p_term = 0.0
+        self.i_term = 0.0
+        self.d_term = 0.0
         self.last_error = 0.0
 
         self.int_error = 0.0
@@ -36,22 +38,24 @@ class PIDController:
 
         if delta_time > self.sample_time:
 
-            self.PTerm = self.Kp * error
-            self.ITerm += error * delta_time
+            self.p_term = self.Kp * error
+            self.i_term += error * delta_time
 
-            if (self.ITerm < -self.windup_guard):
-                self.ITerm = -self.windup_guard
-            elif (self.ITerm > self.windup_guard):
-                self.ITerm = self.windup_guard
+            if self.i_term < -self.windup_guard:
+                self.i_term = -self.windup_guard
+            elif self.i_term > self.windup_guard:
+                self.i_term = self.windup_guard
 
-            self.DTerm = 0.0
+            self.d_term = 0.0
             if delta_time > 0:
-                self.DTerm = delta_error / delta_time
+                self.d_term = delta_error / delta_time
 
             self.last_time = self.current_time
             self.last_error = error
 
-            self.output = self.PTerm + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
+            self.output = (
+                self.p_term + (self.Ki * self.i_term) + (self.Kd * self.d_term)
+            )
 
     def setKp(self, proportional_gain):
         self.Kp = proportional_gain

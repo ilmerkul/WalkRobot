@@ -4,14 +4,11 @@ from std_msgs.msg import String
 
 
 class PlannerSubscriber(Node):
-
     def __init__(self):
-        super().__init__('planner_subscriber')
+        super().__init__("planner_subscriber")
         self.subscription = self.create_subscription(
-            String,
-            'topic',
-            self.listener_callback,
-            10)
+            String, "topic", self.listener_callback, 10
+        )
         self.subscription
 
     def listener_callback(self, msg):
@@ -29,5 +26,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
