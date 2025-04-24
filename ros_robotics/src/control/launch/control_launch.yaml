@@ -1,0 +1,14 @@
+%YAML 1.1
+---
+launch:
+  - node:
+      pkg: "control"
+      exec: "observation_publisher"
+      name: "observation_publisher"
+      namespace: "observation"
+  
+  - node:
+      pkg: "control"
+      exec: "planner_subsriber"
+      name: "planner_subsriber"
+      namespace: "planner"
