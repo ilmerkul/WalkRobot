@@ -10,6 +10,8 @@ X11_SUPPORT := $(if $(DISPLAY),--env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volu
 .PHONY: install build up up_gui xhost_allow clean isort flake8 check_push
 
 install:
+	pip install pre-commit
+	pip install pytest
 	python3 -m poetry lock
 	python3 -m poetry install
 
@@ -43,12 +45,3 @@ clean:
 	@sudo docker ps -aq | xargs -r sudo docker rm -f
 	@echo "Cleaning up Docker images..."
 	@sudo docker images -q $(DOCKER_IMAGE) | xargs -r sudo docker rmi -f
-
-isort:
-	sudo python3 -m isort .
-
-flake8:
-	sudo python3 -m flake8
-
-check_push: isort flake8
-	python3 -m poetry lock
