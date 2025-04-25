@@ -9,9 +9,14 @@ class TestInverseKinematics:
 
     @pytest.fixture
     def ik_custom(self):
-        return InverseKinematics(l1=30, l2=25, phi1=45.0, phi2=90.0,
-                                 phi1_border=(20.0, 100.0),
-                                 phi2_border=(30.0, 120.0))
+        return InverseKinematics(
+            l1=30,
+            l2=25,
+            phi1=45.0,
+            phi2=90.0,
+            phi1_border=(20.0, 100.0),
+            phi2_border=(30.0, 120.0),
+        )
 
     def test_init_default(self, ik_default):
         assert ik_default.l1 == 40
@@ -49,13 +54,16 @@ class TestInverseKinematics:
         assert ik_default.delta_phi1 == 0.0
         assert ik_default.delta_phi2 == 0.0
 
-    @pytest.mark.parametrize("x, z, expect_error", [
-        (0.0, 0.0, True),
-        (100.0, 100.0, False),
-        (1e6, 1e6, False),
-        (30.0, 40.0, False),
-        (10.0, 10.0, False),
-    ])
+    @pytest.mark.parametrize(
+        "x, z, expect_error",
+        [
+            (0.0, 0.0, True),
+            (100.0, 100.0, False),
+            (1e6, 1e6, False),
+            (30.0, 40.0, False),
+            (10.0, 10.0, False),
+        ],
+    )
     def test_update_with_various_coords(self, x, z, expect_error):
         ik = InverseKinematics(l1=40, l2=35)
 

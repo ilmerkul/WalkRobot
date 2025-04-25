@@ -62,7 +62,7 @@ class TestGPGenerator:
         # Проверяем только свойства объекта после вызова update
         assert gp_default.r != 0.0  # Должно измениться от начального 0.0
         assert gp_default.teta == pytest.approx(1.0)  # omega=1.0 * t=1.0
-        assert gp_default.phi == pytest.approx(1.0)   # xi=1.0 * t=1.0
+        assert gp_default.phi == pytest.approx(1.0)  # xi=1.0 * t=1.0
 
     def test_update_with_prev_values(self, gp_default):
         # Устанавливаем предыдущие значения
@@ -76,7 +76,9 @@ class TestGPGenerator:
 
         # Проверяем только свойства объекта
         assert gp_default.r != 2.0  # Должно измениться от r_prev
-        assert gp_default.teta == pytest.approx(2.0 + 0.5)  # omega=1.0 * t=2.0 + teta_prev
+        assert gp_default.teta == pytest.approx(
+            2.0 + 0.5
+        )  # omega=1.0 * t=2.0 + teta_prev
         assert gp_default.phi == pytest.approx(2.0 + 1.0)  # xi=1.0 * t=2.0 + phi_prev
 
     def test_modulate_basic(self, gp_default):
@@ -128,4 +130,4 @@ class TestGPGenerator:
         assert gp_default.teta != teta1
         assert gp_default.phi != phi1
         assert gp_default.teta > teta1  # Должно увеличиться
-        assert gp_default.phi > phi1    # Должно увеличиться
+        assert gp_default.phi > phi1  # Должно увеличиться

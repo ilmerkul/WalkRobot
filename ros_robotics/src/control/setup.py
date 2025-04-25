@@ -24,7 +24,7 @@ setup(
     entry_points={
         "console_scripts": [
             "observation_publisher = control.observation_publisher:main",
-            "planner_subsriber = control.planner_subsriber:main",
+            "planner_subscriber = control.planner_subscriber:main",
         ],
     },
 )
