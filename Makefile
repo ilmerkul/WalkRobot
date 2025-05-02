@@ -1,36 +1,20 @@
-DOCKER_IMAGE := ros2-gazebo
-DOCKERFILE := ./docker/image/Dockerfile
-BUILD_LOG := ./docker/image/build.log
+include .env
+export
 
-PROJECT_DIR := $(shell pwd)
-CONTAINER_WORKDIR := /project
-
-X11_SUPPORT := $(if $(DISPLAY),--env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw",)
-
-.PHONY: install build up up_gui xhost_allow clean isort flake8 check_push
-
-install:
-	pip install pre-commit
-	pip install pytest
-	python3 -m poetry lock
-	python3 -m poetry install
+.PHONY: install build up up_gui xhost_allow clean
 
 build:
 	@echo "Building Docker image..."
-	sudo docker image build -f $(DOCKERFILE) --tag $(DOCKER_IMAGE) . > $(BUILD_LOG) 2>&1
+	@./docker/build.sh
 	@echo "Build complete. Log saved to $(BUILD_LOG)"
 
 up: build
-	sudo docker run -it \
-					-e CONTAINER_WORKDIR=$(CONTAINER_WORKDIR) \
-					--volume="$(PROJECT_DIR):$(CONTAINER_WORKDIR)" \
-					$(DOCKER_IMAGE) bash
+	@echo "Running Docker image..."
+	@./docker/run.sh
 
 up_gui: xhost_allow build
-	sudo docker run -it \
-					-e CONTAINER_WORKDIR=$(CONTAINER_WORKDIR) \
-					--volume="$(PROJECT_DIR):$(CONTAINER_WORKDIR)" \
-					$(X11_SUPPORT) $(DOCKER_IMAGE) bash
+	@echo "Running Docker image..."
+	@./docker/run_gui.sh
 
 xhost_allow:
 	@if [ -z "$$DISPLAY" ]; then \
@@ -45,3 +29,7 @@ clean:
 	@sudo docker ps -aq | xargs -r sudo docker rm -f
 	@echo "Cleaning up Docker images..."
 	@sudo docker images -q $(DOCKER_IMAGE) | xargs -r sudo docker rmi -f
+
+install:
+	@echo "Install packages"
+	@./docker/install.sh $(PROJECT_DIR)/.venv

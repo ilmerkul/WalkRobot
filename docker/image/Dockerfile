@@ -1,17 +1,23 @@
 FROM ubuntu:jammy-20250404
 
-
-ENV ROS_DISTRIBUTION humble
-ENV CONTAINER_WORKDIR /project
 ENV DEBIAN_FRONTEND noninteractive
 
+ENV ROS_DISTRO humble
+ENV ROS_VERSION 2
+ENV ROS_DOMAIN_ID 0
+ENV ROS_LOCALHOST_ONLY 1
+
+ENV CONTAINER_WORKDIR /home/ubuntu/project
+ENV VENV_PATH="${CONTAINER_WORKDIR}/.venv"
 
 # Install essentials
-RUN \
-	apt-get update \
+RUN apt-get update \
 	&& apt-get upgrade -y \
 	&& apt-get install -y \
-		apt-utils
+		apt-utils \
+		# Sound
+		libasound2-plugins \
+		alsa-utils 
 
 # Setup ROS2 from source as per
 RUN apt update && apt install -y locales \
@@ -26,8 +32,11 @@ RUN apt update && apt-get install curl -y \
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 RUN apt update \
 	&& apt upgrade -y \
-	&& apt-get install -y ros-${ROS_DISTRIBUTION}-ros-base \
-	&& apt-get install -y ros-dev-tools ros-${ROS_DISTRIBUTION}-rclpy
+	&& apt-get install -y ros-${ROS_DISTRO}-ros-base \
+	&& apt-get install -y ros-dev-tools ros-${ROS_DISTRO}-rclpy
+RUN apt install -y ros-${ROS_DISTRO}-urdf-launch \
+		ros-${ROS_DISTRO}-xacro \
+		ros-${ROS_DISTRO}-rqt-robot-steering
 
 # Setup gazebo
 RUN apt-get update \
@@ -36,19 +45,30 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
 	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
 	&& apt-get update \
 	&& apt-get install -y ignition-fortress
-RUN apt-get install -y ros-${ROS_DISTRIBUTION}-ros-gz
+
+RUN apt-get install -y ros-${ROS_DISTRO}-ros-gz \
+		ros-${ROS_DISTRO}-ros2-control \
+		ros-${ROS_DISTRO}-ros2-controllers \
+		ros-${ROS_DISTRO}-gazebo-ros-pkgs \
+		ros-${ROS_DISTRO}-urdf-tutorial \
+		ros-${ROS_DISTRO}-gazebo-ros2-control
 
 # Install Python, pip, and poetry
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
-	python3-poetry \
     && rm -rf /var/lib/apt/lists/*
 
 RUN apt install -y python3-colcon-common-extensions
 
 WORKDIR ${CONTAINER_WORKDIR}
+COPY ./docker/install.sh /tmp/install.sh
+COPY ./poetry.lock .
+COPY ./pyproject.toml .
+RUN chmod +x /tmp/install.sh
+RUN /tmp/install.sh ${VENV_PATH}
+
 VOLUME ${CONTAINER_WORKDIR}
 
-CMD ["source", "/opt/ros/${ROS_DISTRIBUTION}/setup.bash"]
+CMD [ "/bin/bash" ]
