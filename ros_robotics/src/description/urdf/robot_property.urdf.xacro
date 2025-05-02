@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- Математические константы -->
+    <xacro:property name="sqrt_2" value="1.41421" />
+    <xacro:property name="PI" value="3.1415926535897931"/>
+
+    <!-- Физические константы -->
+    <xacro:property name="mu1" value="0.8" />
+    <xacro:property name="mu2" value="0.9" />
+
+    <!-- Параметры корпуса (исправлены опечатки в названиях) -->
+    <xacro:property name="corpus_width" value="0.13" />
+    <xacro:property name="corpus_length" value="0.6" />
+    <xacro:property name="corpus_height" value="0.11" />
+    <xacro:property name="corpus_mass" value="10" />
+
+    <!-- Параметры ног (исправлены опечатки) -->
+    <xacro:property name="front_leg_length1" value="0.15" />
+    <xacro:property name="front_leg_length2" value="0.3" />
+    <xacro:property name="front_leg_mass1" value="1" />
+    <xacro:property name="back_leg_length1" value="0.15" />
+    <xacro:property name="back_leg_length2" value="0.3" />
+    <xacro:property name="front_leg_mass2" value="2" />
+    <xacro:property name="leg_width" value="0.03" />
+    <xacro:property name="leg_sphere_radius" value="${leg_width}" />
+    <xacro:property name="leg_sphere_mass" value="0.05" />
+
+    <!-- Параметры расположения ног -->
+    
+    <!-- Параметры для первого сегмента ноги -->
+    <xacro:property name="leg1_shift_y" value="${corpus_length/10}" />
+    <xacro:property name="leg1_shift_z" value="${corpus_height/4}" />
+    <xacro:property name="leg1_angle_x" value="${-PI/4}" />
+        
+    <!-- Параметры для второго сегмента ноги -->
+    <xacro:property name="leg2_angle_x" value="${PI/2}" />
+</robot>

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <gazebo reference="base_link">
+        <material>Gazebo/Blue</material>
+        <mu1>0.9</mu1> <!-- Статическое трение -->
+        <mu2>0.7</mu2> <!-- Динамическое трение -->
+        <kp>1000000</kp> <!-- Жесткость контакта -->
+        <kd>1000</kd> <!-- Демпфирование -->
+    </gazebo>
+
+    <xacro:macro name="leg_color_gazebo" params="prefix">
+        <gazebo reference="${prefix}_leg1_link">
+            <material>Gazebo/Blue</material>
+            <mu1>0.9</mu1> <!-- Статическое трение -->
+            <mu2>0.7</mu2> <!-- Динамическое трение -->
+            <kp>1000000</kp> <!-- Жесткость контакта -->
+            <kd>1000</kd> <!-- Демпфирование -->
+        </gazebo>
+        <gazebo reference="${prefix}_leg2_link">
+            <material>Gazebo/Blue</material>
+            <mu1>0.9</mu1> <!-- Статическое трение -->
+            <mu2>0.7</mu2> <!-- Динамическое трение -->
+            <kp>1000000</kp> <!-- Жесткость контакта -->
+            <kd>1000</kd> <!-- Демпфирование -->
+        </gazebo>
+        <gazebo reference="${prefix}_foot_link">
+            <material>Gazebo/Rubber</material>
+            <mu1>0.9</mu1> <!-- Статическое трение -->
+            <mu2>0.7</mu2> <!-- Динамическое трение -->
+            <kp>1000000</kp> <!-- Жесткость контакта -->
+            <kd>1000</kd> <!-- Демпфирование -->
+        </gazebo>
+    </xacro:macro>
+    
+    <xacro:leg_color_gazebo prefix="front_right"/>
+    <xacro:leg_color_gazebo prefix="back_right"/>
+    <xacro:leg_color_gazebo prefix="front_left"/>
+    <xacro:leg_color_gazebo prefix="back_left"/>
+
+    <gazebo>
+        <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+            <parameters>$(find control)/config/robot.yaml</parameters>
+            <controller_manager_node_name>controller_manager</controller_manager_node_name>
+        </plugin>
+    </gazebo>
+
+    <gazebo>
+        <plugin filename="libodometry_plugin.so" name="odometry_plugin">
+            <frame>base_link</frame>
+            <world_frame>fixed_world</world_frame>
+        </plugin>
+    </gazebo>
+</robot>

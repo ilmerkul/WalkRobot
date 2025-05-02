@@ -1,0 +1,205 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="tropy_spot">
+    <name>Tropy Spot</name>
+
+    <author>
+        <name>merkul</name>
+        <email>merkuloviv@my.msu.ru</email>
+    </author>
+
+    <description>Robo-dog</description>
+
+    <xacro:include filename="$(find description)/urdf/robot_property.urdf.xacro" />
+
+    <material name="black">
+        <color rgba="0.1 0.1 0.1 1"/>
+    </material>
+
+    <material name="red">
+        <color rgba="0.5 0 0 1"/>
+    </material>
+
+    <!-- Макрос для инерционных свойств балки -->
+    <xacro:macro name="beam_inertial" params="mass width length height">
+        <inertial>
+            <mass value="${mass}"/>
+            <inertia
+                ixx="${mass * (height * height + length * length) / 12}"
+                ixy="0.0"
+                ixz="0.0"
+                iyy="${mass * (width * width + height * height) / 12}"
+                iyz="0.0"
+                izz="${mass * (width * width + length * length) / 12}"
+            />
+        </inertial>
+    </xacro:macro>
+
+    <!-- Макрос для инерционных свойств сферы -->
+    <xacro:macro name="sphere_inertial" params="mass radius">
+        <inertial>
+            <mass value="${mass}"/>
+            <inertia
+                ixx="${0.4 * mass * radius * radius}" 
+                ixy="0.0"
+                ixz="0.0"
+                iyy="${0.4 * mass * radius * radius}"
+                iyz="0.0"
+                izz="${0.4 * mass * radius * radius}"
+            />
+        </inertial>
+    </xacro:macro>
+
+    <!-- Макрос для физики -->
+    <xacro:macro name="surface_robot" params="mu">
+        <surface>
+            <!-- Трение -->
+            <friction>
+                <ode>
+                    <mu>${mu}</mu>       <!-- Коэффициент трения (обычно 0–1) -->
+                    <mu2>0.6</mu2>     <!-- Второй коэффициент (если используется) -->
+                    <fdir1>1 0 0</fdir1> <!-- Направление анизотропного трения -->
+                    <slip1>0.1</slip1>  <!-- Проскальзывание -->
+                    <slip2>0.1</slip2>
+                </ode>
+            </friction>
+            <!-- Упругость (отскок) -->
+            <bounce>
+                <restitution_coefficient>0.5</restitution_coefficient> <!-- 0 = нет отскока, 1 = абсолютно упругий -->
+                <threshold>1e5</threshold> <!-- Минимальная скорость для отскока -->
+            </bounce>
+            <!-- Контактные параметры -->
+            <contact>
+                <ode>
+                    <soft_cfm>0.001</soft_cfm>  <!-- Псевдо-жесткость пружины -->
+                    <soft_erp>0.2</soft_erp>    <!-- Псевдо-демпфирование -->
+                    <kp>1e8</kp>                <!-- Жесткость пружины (N/m) -->
+                    <kd>1</kd>                  <!-- Демпфирование (N·s/m) -->
+                </ode>
+            </contact>
+        </surface>
+    </xacro:macro>
+
+    <!-- Макрос для геометрии корпуса -->
+    <xacro:macro name="corpus_geometry">
+        <geometry>
+            <box size="${corpus_width} ${corpus_length} ${corpus_height}" />
+        </geometry>
+    </xacro:macro>
+
+    <link name="dummy_link"></link>
+    <!-- Корпус робота -->
+    <link name="base_link">
+        <xacro:beam_inertial mass="${corpus_mass}" width="${corpus_width}" length="${corpus_length}" height="${corpus_height}"/>
+        <visual>
+            <xacro:corpus_geometry />
+            <material name="black"/>
+        </visual>
+        <collision>
+            <xacro:corpus_geometry />
+            <xacro:surface_robot mu="${mu1}"/>
+        </collision>
+    </link>
+    <joint name="dummy_joint" type="fixed">
+        <origin rpy="0 0 0" xyz="0 0 0" />
+        <parent link="dummy_link"/>
+        <child link="base_link"/>
+	</joint>
+
+    <!-- Усовершенствованный макрос для создания ноги -->
+    <xacro:macro name="leg" params="prefix length1 length2 reflect_x reflect_y">
+        <!-- Макрос для геометрии ноги -->
+        <xacro:macro name="leg_geometry" params="length">
+            <geometry>
+                <box size="${leg_width} ${leg_width} ${length}" />
+            </geometry>
+        </xacro:macro>
+        
+        <!-- Первый сегмент ноги -->
+        <link name="${prefix}_leg1_link">
+            <xacro:beam_inertial mass="${front_leg_mass1}" width="${leg_width}" length="${leg_width}" height="${length1}"/>
+            <visual>
+                <origin xyz="0 0 ${-length1/2}" rpy="0 0 0" />
+                <xacro:leg_geometry length="${length1}"/>
+                <material name="black"/>
+            </visual>
+            <collision>
+                <origin xyz="0 0 ${-length1/2}" rpy="0 0 0" />
+                <xacro:leg_geometry length="${length1}"/>
+                <xacro:surface_robot mu="${mu1}"/>
+            </collision>
+        </link>
+        
+        <!-- Второй сегмент ноги -->
+        <link name="${prefix}_leg2_link">
+            <xacro:beam_inertial mass="${front_leg_mass2}" width="${leg_width}" length="${leg_width}" height="${length2}"/>
+            <visual>
+                <origin xyz="0 0 -${length2/2}" rpy="0 0 0" />
+                <xacro:leg_geometry length="${length2}"/>
+                <material name="black"/>
+            </visual>
+            <collision>
+                <origin xyz="0 0 -${length2/2}" rpy="0 0 0" />
+                <xacro:leg_geometry length="${length2}"/>
+                <xacro:surface_robot mu="${mu1}"/>
+            </collision>
+        </link>
+
+        <!-- Третий сегмент ноги -->
+        <link name="${prefix}_foot_link">
+            <xacro:sphere_inertial mass="${leg_sphere_mass}" radius="${leg_sphere_radius}"/>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <sphere radius="${leg_sphere_radius}"/>
+                </geometry>
+                <material name="red"/>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <sphere radius="${leg_sphere_radius}"/>
+                </geometry>
+                <xacro:surface_robot mu="${mu2}"/>
+            </collision>
+        </link>
+        
+        <!-- Соединение первого сегмента с корпусом -->
+        <joint name="${prefix}_leg1_corpus_joint" type="revolute">
+            <parent link="base_link"/>
+            <child link="${prefix}_leg1_link"/>
+            <origin xyz="${reflect_x * corpus_width/2} ${reflect_y * (corpus_length/2 - leg1_shift_y)} ${leg1_shift_z}" rpy="${leg1_angle_x} 0 0"/>
+            <axis xyz="1 0 0"/>
+            <limit effort="150.0" lower="${leg1_angle_x}" upper="${-leg1_angle_x}" velocity="3.0"/>
+            <dynamics damping="0.7" friction="0.1"/>
+        </joint>
+        
+        <!-- Соединение между сегментами ноги -->
+        <joint name="${prefix}_leg1_leg2_joint" type="revolute">
+            <parent link="${prefix}_leg1_link"/>
+            <child link="${prefix}_leg2_link"/>
+            <origin xyz="0 0 ${-length1}" rpy="${leg2_angle_x} 0 0"/>
+            <axis xyz="1 0 0"/>
+            <limit effort="120.0" lower="${-leg2_angle_x}" upper="${PI/12}" velocity="4.0"/>
+            <dynamics damping="0.5" friction="0.1"/>
+        </joint>
+
+        <!-- Соединение между сферой и сегментом ноги -->
+        <joint name="${prefix}_foot_joint" type="fixed">
+            <parent link="${prefix}_leg2_link"/>
+            <child link="${prefix}_foot_link"/>
+            <origin xyz="0 0 ${-length2}" rpy="0 0 0"/>
+        </joint>
+    </xacro:macro>
+
+    <!-- Создание всех четырех ног -->
+    <xacro:leg prefix="front_right" length1="${front_leg_length1}" length2="${front_leg_length2}" reflect_x="1" reflect_y="1"/>
+    <xacro:leg prefix="back_right" length1="${back_leg_length1}" length2="${back_leg_length2}" reflect_x="1" reflect_y="-1"/>
+    <xacro:leg prefix="front_left" length1="${front_leg_length1}" length2="${front_leg_length2}" reflect_x="-1" reflect_y="1"/>
+    <xacro:leg prefix="back_left" length1="${back_leg_length1}" length2="${back_leg_length2}" reflect_x="-1" reflect_y="-1"/>
+
+    <xacro:include filename="$(find description)/urdf/robot_transmission.urdf.xacro" />
+
+    <xacro:include filename="$(find description)/urdf/robot_ros.urdf.xacro" />
+
+    <xacro:include filename="$(find description)/urdf/robot_gazebo.urdf.xacro" />
+</robot>

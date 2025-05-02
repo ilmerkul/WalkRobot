@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <ros2_control name="TropySpotControl" type="system">
+        <hardware>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+        <joint name="front_right_leg1_corpus_joint">
+            <command_interface name="position" />
+            <state_interface name="position"/>
+        </joint>
+        <joint name="back_right_leg1_corpus_joint">
+            <command_interface name="position" />
+            <state_interface name="position"/>
+        </joint>
+        <joint name="front_left_leg1_corpus_joint">
+            <command_interface name="position" />
+            <state_interface name="position"/>
+        </joint>
+        <joint name="back_left_leg1_corpus_joint">
+            <command_interface name="position" />
+            <state_interface name="position"/>
+        </joint>
+        <joint name="front_right_leg1_leg2_joint">
+            <command_interface name="position" />
+            <state_interface name="position"/>
+        </joint>
+        <joint name="back_right_leg1_leg2_joint">
+            <command_interface name="position" />
+            <state_interface name="position"/>
+        </joint>
+        <joint name="front_left_leg1_leg2_joint">
+            <command_interface name="position" />
+            <state_interface name="position"/>
+        </joint>
+        <joint name="back_left_leg1_leg2_joint">
+            <command_interface name="position" />
+            <state_interface name="position"/>
+        </joint>
+    </ros2_control>
+</robot>
