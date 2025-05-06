@@ -13,15 +13,15 @@ def generate_launch_description():
     world_arg = DeclareLaunchArgument(
         name="world",
         description="The path to the description of world",
-        default_value=PathJoinSubstitution(
-            [FindPackageShare(package_name), "worlds", "empty.world"]
-        ),
+        default_value="empty.world",
     )
 
     launch_args = [gui_arg, world_arg]
 
     gui = LaunchConfiguration("gui")
-    world = LaunchConfiguration("world")
+    world = PathJoinSubstitution(
+        [FindPackageShare(package_name), "worlds", LaunchConfiguration("world")]
+    )
 
     gzserver_cmd_launch = IncludeLaunchDescription(
         PathJoinSubstitution(
@@ -29,10 +29,10 @@ def generate_launch_description():
         ),
         launch_arguments={
             "world": world,
-            "pause": "true",
+            "pause": "false",
             "physics": "ode",
             "server_required": "true",
-            "gui_required": "false",
+            "gui_required": gui,
         }.items(),
     )
 

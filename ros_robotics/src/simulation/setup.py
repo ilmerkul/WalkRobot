@@ -3,7 +3,16 @@ import os
 
 from setuptools import find_packages, setup
 
-package_name = "simulation"
+
+def get_package_name():
+    import xml.etree.ElementTree as ET
+
+    tree = ET.parse("package.xml")
+    ros_pkg_name = tree.find("name").text
+    return ros_pkg_name
+
+
+package_name = get_package_name()
 
 setup(
     name=package_name,
