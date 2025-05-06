@@ -39,7 +39,7 @@
         <inertial>
             <mass value="${mass}"/>
             <inertia
-                ixx="${0.4 * mass * radius * radius}" 
+                ixx="${0.4 * mass * radius * radius}"
                 ixy="0.0"
                 ixz="0.0"
                 iyy="${0.4 * mass * radius * radius}"
@@ -107,7 +107,7 @@
                 <box size="${leg_width} ${leg_width} ${length}" />
             </geometry>
         </xacro:macro>
-        
+
         <!-- Первый сегмент ноги -->
         <link name="${prefix}_leg1_link">
             <xacro:beam_inertial mass="${front_leg_mass1}" width="${leg_width}" length="${leg_width}" height="${length1}"/>
@@ -122,7 +122,7 @@
                 <xacro:surface_robot mu="${mu1}"/>
             </collision>
         </link>
-        
+
         <!-- Второй сегмент ноги -->
         <link name="${prefix}_leg2_link">
             <xacro:beam_inertial mass="${front_leg_mass2}" width="${leg_width}" length="${leg_width}" height="${length2}"/>
@@ -164,7 +164,7 @@
                 <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
             </inertial>
         </link>
-        
+
         <!-- Соединение первого сегмента с корпусом -->
         <joint name="${prefix}_leg1_corpus_joint" type="revolute">
             <parent link="base_link"/>
@@ -174,7 +174,7 @@
             <limit effort="150.0" lower="${leg1_angle_x}" upper="${-leg1_angle_x}" velocity="3.0"/>
             <dynamics damping="0.7" friction="0.1"/>
         </joint>
-        
+
         <!-- Соединение между сегментами ноги -->
         <joint name="${prefix}_leg1_leg2_joint" type="revolute">
             <parent link="${prefix}_leg1_link"/>

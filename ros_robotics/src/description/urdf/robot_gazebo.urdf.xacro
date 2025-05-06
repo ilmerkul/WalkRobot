@@ -47,7 +47,7 @@
             </sensor>
         </gazebo>
     </xacro:macro>
-    
+
     <xacro:leg_color_gazebo prefix="front_right"/>
     <xacro:leg_color_gazebo prefix="back_right"/>
     <xacro:leg_color_gazebo prefix="front_left"/>
