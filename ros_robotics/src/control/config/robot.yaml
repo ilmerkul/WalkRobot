@@ -7,18 +7,18 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
       publish_rate: 50
 
-    position_controller:
-      type: position_controllers/JointGroupPositionController
+    effort_controller:
+      type: effort_controllers/JointGroupEffortController
 
-position_controller:
+effort_controller:
   ros__parameters:
     joints:
       - front_right_leg1_corpus_joint
       - front_right_leg1_leg2_joint
-      - front_left_leg1_corpus_joint  
+      - front_left_leg1_corpus_joint
       - front_left_leg1_leg2_joint
       - back_right_leg1_corpus_joint
       - back_right_leg1_leg2_joint
       - back_left_leg1_corpus_joint
       - back_left_leg1_leg2_joint
-    interface_name: position
+    interface_name: effort
