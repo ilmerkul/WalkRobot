@@ -104,13 +104,14 @@ Visualization Manager:
           Value: true
         base_link:
           Alpha: 1
-          Show Axes: false
+          Show Axes: true
           Show Trail: false
           Value: true
         dummy_link:
           Alpha: 1
-          Show Axes: false
+          Show Axes: true
           Show Trail: false
+          Value: true
         front:
           Alpha: 1
           Show Axes: false
@@ -169,7 +170,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: dummy_link
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:

@@ -5,36 +5,44 @@
             <plugin>gazebo_ros2_control/GazeboSystem</plugin>
         </hardware>
         <joint name="front_right_leg1_corpus_joint">
-            <command_interface name="position" />
+            <command_interface name="effort" />
             <state_interface name="position"/>
+            <state_interface name="velocity"/>
         </joint>
         <joint name="back_right_leg1_corpus_joint">
-            <command_interface name="position" />
+            <command_interface name="effort" />
             <state_interface name="position"/>
+            <state_interface name="velocity"/>
         </joint>
         <joint name="front_left_leg1_corpus_joint">
-            <command_interface name="position" />
+            <command_interface name="effort" />
             <state_interface name="position"/>
+            <state_interface name="velocity"/>
         </joint>
         <joint name="back_left_leg1_corpus_joint">
-            <command_interface name="position" />
+            <command_interface name="effort" />
             <state_interface name="position"/>
+            <state_interface name="velocity"/>
         </joint>
         <joint name="front_right_leg1_leg2_joint">
-            <command_interface name="position" />
+            <command_interface name="effort" />
             <state_interface name="position"/>
+            <state_interface name="velocity"/>
         </joint>
         <joint name="back_right_leg1_leg2_joint">
-            <command_interface name="position" />
+            <command_interface name="effort" />
             <state_interface name="position"/>
+            <state_interface name="velocity"/>
         </joint>
         <joint name="front_left_leg1_leg2_joint">
-            <command_interface name="position" />
+            <command_interface name="effort" />
             <state_interface name="position"/>
+            <state_interface name="velocity"/>
         </joint>
         <joint name="back_left_leg1_leg2_joint">
-            <command_interface name="position" />
+            <command_interface name="effort" />
             <state_interface name="position"/>
+            <state_interface name="velocity"/>
         </joint>
     </ros2_control>
 </robot>

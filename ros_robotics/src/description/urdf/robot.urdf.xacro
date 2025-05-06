@@ -86,7 +86,6 @@
         </geometry>
     </xacro:macro>
 
-    <link name="dummy_link"></link>
     <!-- Корпус робота -->
     <link name="base_link">
         <xacro:beam_inertial mass="${corpus_mass}" width="${corpus_width}" length="${corpus_length}" height="${corpus_height}"/>
@@ -99,11 +98,6 @@
             <xacro:surface_robot mu="${mu1}"/>
         </collision>
     </link>
-    <joint name="dummy_joint" type="fixed">
-        <origin rpy="0 0 0" xyz="0 0 0" />
-        <parent link="dummy_link"/>
-        <child link="base_link"/>
-	</joint>
 
     <!-- Усовершенствованный макрос для создания ноги -->
     <xacro:macro name="leg" params="prefix length1 length2 reflect_x reflect_y">
@@ -162,6 +156,14 @@
                 <xacro:surface_robot mu="${mu2}"/>
             </collision>
         </link>
+
+        <!-- Датчик силы на стопе -->
+        <link name="${prefix}_foot_force_sensor_link">
+            <inertial>
+                <mass value="0.001"/>  <!-- Минимальная масса -->
+                <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
+            </inertial>
+        </link>
         
         <!-- Соединение первого сегмента с корпусом -->
         <joint name="${prefix}_leg1_corpus_joint" type="revolute">
@@ -188,6 +190,12 @@
             <parent link="${prefix}_leg2_link"/>
             <child link="${prefix}_foot_link"/>
             <origin xyz="0 0 ${-length2}" rpy="0 0 0"/>
+        </joint>
+
+        <joint name="${prefix}_foot_force_sensor_joint" type="fixed">
+            <parent link="${prefix}_foot_link"/>  <!-- Родительское звено стопы -->
+            <child link="${prefix}_foot_force_sensor_link"/>
+            <origin xyz="0 0 -0.05" rpy="0 0 0"/>  <!-- Размещение под стопой -->
         </joint>
     </xacro:macro>
 

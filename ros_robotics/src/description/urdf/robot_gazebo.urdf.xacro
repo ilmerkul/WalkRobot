@@ -30,12 +30,49 @@
             <kp>1000000</kp> <!-- Жесткость контакта -->
             <kd>1000</kd> <!-- Демпфирование -->
         </gazebo>
+        <!-- Gazebo plugin для измерения силы -->
+        <gazebo reference="${prefix}_foot_force_sensor_link">
+            <sensor name="${prefix}_foot_force_sensor" type="force_torque">
+                <always_on>true</always_on>
+                <update_rate>100</update_rate>
+                <plugin filename="libgazebo_ros_ft_sensor.so" name="ft_sensor_plugin">
+                    <topic_name>/sensors/force/${prefix}_foot</topic_name>
+                    <frame_name>${prefix}_foot_force_sensor_link</frame_name>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.1</stddev>  <!-- Уровень шума -->
+                    </noise>
+                </plugin>
+            </sensor>
+        </gazebo>
     </xacro:macro>
     
     <xacro:leg_color_gazebo prefix="front_right"/>
     <xacro:leg_color_gazebo prefix="back_right"/>
     <xacro:leg_color_gazebo prefix="front_left"/>
     <xacro:leg_color_gazebo prefix="back_left"/>
+
+    <gazebo reference="base_link">
+        <gravity>true</gravity>
+        <sensor name="imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <visualize>true</visualize>
+            <topic>__default_topic__</topic>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <topicName>imu/data_raw</topicName>
+                <bodyName>base_link</bodyName>
+                <updateRateHZ>10.0</updateRateHZ>
+                <gaussianNoise>0.005</gaussianNoise>
+                <xyzOffset>0 0 0</xyzOffset>
+                <rpyOffset>0 0 0</rpyOffset>
+                <frameName>base_link</frameName>
+                <initialOrientationAsReference>false</initialOrientationAsReference>
+            </plugin>
+            <pose>0 0 0 0 0 0</pose>
+        </sensor>
+    </gazebo>
 
     <gazebo>
         <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">

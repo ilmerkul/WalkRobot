@@ -26,7 +26,8 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "robot_description_publisher = description.robot_description_publisher:main"
+            "robot_description_publisher = description.robot_description_publisher:main",
+            "tf_wrapper = description.tf_wrapper:main",
         ],
     },
 )

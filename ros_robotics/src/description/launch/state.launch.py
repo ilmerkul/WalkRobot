@@ -1,6 +1,7 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, RegisterEventHandler
 from launch.conditions import IfCondition, UnlessCondition
+from launch.event_handlers import OnProcessStart
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -83,48 +84,29 @@ def generate_launch_description():
     )
 
     tf = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
+        package=package_name,
+        executable="tf_wrapper",
         name="static_transform_publisher",
         output="both",
-        arguments=[
-            "--x",
-            "0.0",
-            "--y",
-            "0.0",
-            "--z",
-            "0.0",
-            "--roll",
-            "0.0",
-            "--pitch",
-            "0.0",
-            "--yaw",
-            "0.0",
-            "--frame-id",
-            "/map",
-            "--child-frame-id",
-            "/dummy_link",
-        ],
+        parameters=[{"config_file": tfconfig}],
     )
-
-    # tf = Node(
-    #    package="tf2_ros",
-    #    executable="static_transform_publisher",
-    #    name="static_transform_publisher",
-    #    output="both",
-    #    arguments=["--ros-params", tfconfig],
-    # )
 
     joint_state_publisher_nodes = [
         joint_state_publisher_node,
         joint_state_publisher_gui_node,
     ]
 
+    delay_after_imu_relay = RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=robot_state_publisher_node,
+            on_start=[*joint_state_publisher_nodes, tf],
+        )
+    )
+
     return LaunchDescription(
         [
             *launch_args,
             robot_state_publisher_node,
-            *joint_state_publisher_nodes,
-            tf,
+            delay_after_imu_relay,
         ]
     )
