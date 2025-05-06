@@ -51,7 +51,9 @@ RUN apt-get install -y ros-${ROS_DISTRO}-ros-gz \
 		ros-${ROS_DISTRO}-ros2-controllers \
 		ros-${ROS_DISTRO}-gazebo-ros-pkgs \
 		ros-${ROS_DISTRO}-urdf-tutorial \
-		ros-${ROS_DISTRO}-gazebo-ros2-control
+		ros-${ROS_DISTRO}-gazebo-ros2-control \
+		ros-${ROS_DISTRO}-imu-filter-madgwick \
+		ros-${ROS_DISTRO}-topic-tools
 
 # Install Python, pip, and poetry
 RUN apt-get update && apt-get install -y \

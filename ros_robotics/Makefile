@@ -14,6 +14,12 @@ source:
 	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash && \
 	          source $(WORKSPACE_ROOT)/install/setup.bash"
 
+build_interface:
+	@echo "Building control package..."
+	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash && \
+	          cd $(WORKSPACE_ROOT) && \
+	          colcon build --packages-select $(PACKAGE_INTERFACE_NAME) --symlink-install"
+
 build_control:
 	@echo "Building control package..."
 	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash && \
@@ -37,12 +43,12 @@ run_control: build_control
 	@bash -c "source $(WORKSPACE_ROOT)/install/setup.bash && \Waiting
 	          ros2 launch $(PACKAGE_CONTROL_NAME) control.launch.py"
 
-run_simulation: build_simulation build_control build_description
+run_simulation: build_interface build_description build_control build_simulation
 	@echo "Running ROS simulation nodes..."
 	@bash -c "source $(WORKSPACE_ROOT)/install/setup.bash && \
 	          ros2 launch $(PACKAGE_SIMULATION_NAME) gazebo.launch.py"
 
-run_description_display: build_description
+run_description_display: build_description build_control
 	@echo "Running ROS description nodes..."
 	@bash -c "source $(WORKSPACE_ROOT)/install/setup.bash && \
 	          ros2 launch $(PACKAGE_DESCRIPTION_NAME) display.launch.py"
