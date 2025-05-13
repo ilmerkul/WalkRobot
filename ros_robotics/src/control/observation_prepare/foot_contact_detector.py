@@ -7,9 +7,9 @@ from rclpy.node import Node
 
 class FootContactDetector(Node):
     def __init__(self):
-        super().__init__('foot_contact_detector')
+        super().__init__("foot_contact_detector")
 
-        self.prefixes = ['front_right', 'back_right', 'front_left', 'back_left']
+        self.prefixes = ["front_right", "back_right", "front_left", "back_left"]
         self.force_threshold = 5.0
 
         self.contacts = {prefix: False for prefix in self.prefixes}
@@ -17,7 +17,7 @@ class FootContactDetector(Node):
         self._foot_subscriptions = [
             self.create_subscription(
                 WrenchStamped,
-                f'/sensors/force/{prefix}_foot',
+                f"/sensors/force/{prefix}_foot",
                 self.create_foot_callback(prefix),
                 10,
             )
@@ -25,7 +25,7 @@ class FootContactDetector(Node):
         ]
 
         self.contacts_pub = self.create_publisher(
-            FootContacts, 'force/foot_contact_state', 10
+            FootContacts, "force/foot_contact_state", 10
         )
 
         self.timer = self.create_timer(0.02, self.publish_contacts)
@@ -56,5 +56,5 @@ def main(args=None):
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

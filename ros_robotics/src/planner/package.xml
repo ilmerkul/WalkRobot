@@ -1,25 +1,15 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>control</name>
+  <name>planner</name>
   <version>0.0.0</version>
-  <description>Control robot package</description>
+  <description>Planner package</description>
   <maintainer email="merkuloviv@my.msu.ru">merkul</maintainer>
   <license>MIT</license>
-
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>ros2launch</exec_depend>
-  <exec_depend>urdf_launch</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>interface</exec_depend>
-  <exec_depend>dl_control</exec_depend>
-  <exec_depend>planner</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
-  <test_depend>ament_lint_auto</test_depend>
   <test_depend>python3-pytest</test_depend>
 
   <export>

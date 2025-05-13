@@ -29,7 +29,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             "world": world,
-            "pause": "false",
+            "pause": "true",
             "physics": "ode",
             "server_required": "true",
             "gui_required": gui,

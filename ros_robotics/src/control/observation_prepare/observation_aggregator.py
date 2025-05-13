@@ -6,17 +6,17 @@ from sensor_msgs.msg import Imu, JointState
 
 class ObservationAggregator(Node):
     def __init__(self):
-        super().__init__('obseravation_aggregator')
+        super().__init__("obseravation_aggregator")
         self.imu_sub = self.create_subscription(
-            Imu, '/sensors/imu/filtered', self.imu_cb, 10
+            Imu, "/sensors/imu/filtered", self.imu_cb, 10
         )
         self.joint_sub = self.create_subscription(
-            JointState, '/joint_states', self.joint_cb, 10
+            JointState, "/joint_states", self.joint_cb, 10
         )
         self.foot_sub = self.create_subscription(
-            FootContacts, '/sensors/force/foot_contact_state', self.foot_cb, 10
+            FootContacts, "/sensors/force/foot_contact_state", self.foot_cb, 10
         )
-        self.pub = self.create_publisher(AgrObs, 'aggregated_observation', 10)
+        self.pub = self.create_publisher(AgrObs, "aggregated_observation", 10)
 
         self.last_imu = None
         self.last_joint = None
@@ -57,5 +57,5 @@ def main(args=None):
         rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

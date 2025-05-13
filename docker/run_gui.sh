@@ -19,7 +19,6 @@ docker run -it \
   --env ROS_VERSION=$ROS_VERSION \
   --env ROS_DOMAIN_ID=$ROS_DOMAIN_ID \
   --env ROS_LOCALHOST_ONLY=$ROS_LOCALHOST_ONLY \
-  --volume="$PROJECT_DIR/dl:$CONTAINER_WORKDIR/dl" \
   --volume="$PROJECT_DIR/ros_robotics:$CONTAINER_WORKDIR/ros_robotics" \
   --volume="$PROJECT_DIR/poetry.lock:$CONTAINER_WORKDIR/poetry.lock" \
   --volume="$PROJECT_DIR/pyproject.toml:$CONTAINER_WORKDIR/pyproject.toml" \

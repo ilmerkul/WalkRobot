@@ -8,7 +8,8 @@ ENV ROS_DOMAIN_ID 0
 ENV ROS_LOCALHOST_ONLY 1
 
 ENV CONTAINER_WORKDIR /home/ubuntu/project
-ENV VENV_PATH="${CONTAINER_WORKDIR}/.venv"
+ENV WORKSPACE_ROOT="${CONTAINER_WORKDIR}/ros_robotics"
+ENV VENV_PATH="${WORKSPACE_ROOT}/venv"
 
 # Install essentials
 RUN apt-get update \
@@ -70,6 +71,9 @@ COPY ./poetry.lock .
 COPY ./pyproject.toml .
 RUN chmod +x /tmp/install.sh
 RUN /tmp/install.sh ${VENV_PATH}
+
+# Install torch
+RUN pip3 install torch --index-url https://download.pytorch.org/whl/cpu
 
 VOLUME ${CONTAINER_WORKDIR}
 
