@@ -169,9 +169,9 @@
         <joint name="${prefix}_leg1_corpus_joint" type="revolute">
             <parent link="base_link"/>
             <child link="${prefix}_leg1_link"/>
-            <origin xyz="${reflect_x * corpus_width/2} ${reflect_y * (corpus_length/2 - leg1_shift_y)} ${leg1_shift_z}" rpy="${leg1_angle_x} 0 0"/>
+            <origin xyz="${reflect_x * corpus_width/2} ${reflect_y * (corpus_length/2 - leg1_shift_y)} ${leg1_shift_z}" rpy="${-leg1_angle_x} 0 0"/>
             <axis xyz="1 0 0"/>
-            <limit effort="150.0" lower="${leg1_angle_x}" upper="${-leg1_angle_x}" velocity="3.0"/>
+            <limit effort="150.0" lower="${leg1_angle_lower_x}" upper="${leg1_angle_upper_x}" velocity="3.0"/>
             <dynamics damping="0.7" friction="0.1"/>
         </joint>
 
@@ -181,7 +181,7 @@
             <child link="${prefix}_leg2_link"/>
             <origin xyz="0 0 ${-length1}" rpy="${leg2_angle_x} 0 0"/>
             <axis xyz="1 0 0"/>
-            <limit effort="120.0" lower="${-leg2_angle_x}" upper="${PI/12}" velocity="4.0"/>
+            <limit effort="120.0" lower="${leg2_angle_lower_x}" upper="${leg2_angle_upper_x}" velocity="4.0"/>
             <dynamics damping="0.5" friction="0.1"/>
         </joint>
 

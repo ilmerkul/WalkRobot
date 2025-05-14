@@ -1,3 +1,4 @@
+import numpy as np
 import rclpy
 from control.utils import get_joints
 from interface.msg import AgrObs
@@ -13,26 +14,41 @@ class PlannerNode(Node):
         self.stand_up_pub = self.create_publisher(AgrObs, "stand_up", 10)
         self.move_pub = self.create_publisher(AgrObs, "move", 10)
         self.joint_order = get_joints()
+        self.MAX_ALLOWED_ANGLE = 0.6
 
     def observation_callback(self, msg: AgrObs):
         orientation = msg.imu.orientation
-        orientation = [orientation.x, orientation.y, orientation.z]
-        angular_velocity = msg.imu.angular_velocity
-        angular_velocity = [angular_velocity.x, angular_velocity.y, angular_velocity.z]
-        linear_acceleration = msg.imu.linear_acceleration
-        linear_acceleration = [
-            linear_acceleration.x,
-            linear_acceleration.y,
-            linear_acceleration.z,
-        ]
-        foots_forces = msg.foots.forces
-        position = msg.joint_states.position
-        velocity = msg.joint_states.velocity
+        x = orientation.x
+        y = orientation.y
+        z = orientation.z
+        w = orientation.w
 
-        if True:
+        roll, pitch, _ = self.quaternion_to_euler(x, y, z, w)
+
+        # stand_up_condition = abs(roll) > self.MAX_ALLOWED_ANGLE or abs(pitch) > self.MAX_ALLOWED_ANGLE
+        stand_up_condition = True
+
+        if stand_up_condition:
             self.stand_up_pub.publish(msg)
         else:
             self.move_pub.publish(msg)
+
+    def quaternion_to_euler(self, x, y, z, w):
+        sinr_cosp = 2 * (w * x + y * z)
+        cosr_cosp = 1 - 2 * (x * x + y * y)
+        roll = np.arctan2(sinr_cosp, cosr_cosp)
+
+        sinp = 2 * (w * y - z * x)
+        if abs(sinp) >= 1:
+            pitch = np.sign(sinp) * (np.pi / 2)
+        else:
+            pitch = np.arcsin(sinp)
+
+        siny_cosp = 2 * (w * z + x * y)
+        cosy_cosp = 1 - 2 * (y * y + z * z)
+        yaw = np.arctan2(siny_cosp, cosy_cosp)
+
+        return roll, pitch, yaw
 
 
 def main(args=None):

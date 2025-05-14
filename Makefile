@@ -8,11 +8,11 @@ build:
 	@./docker/build.sh
 	@echo "Build complete. Log saved to $(BUILD_LOG)"
 
-up: build
+up:
 	@echo "Running Docker image..."
 	@./docker/run.sh
 
-up_gui: xhost_allow build
+up_gui: xhost_allow
 	@echo "Running Docker image..."
 	@./docker/run_gui.sh
 

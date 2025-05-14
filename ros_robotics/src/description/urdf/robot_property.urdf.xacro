@@ -30,8 +30,12 @@
     <!-- Параметры для первого сегмента ноги -->
     <xacro:property name="leg1_shift_y" value="${corpus_length/10}" />
     <xacro:property name="leg1_shift_z" value="${corpus_height/4}" />
-    <xacro:property name="leg1_angle_x" value="${-PI/4}" />
+    <xacro:property name="leg1_angle_x" value="${PI/4}" />
+    <xacro:property name="leg1_angle_lower_x" value="${-PI/4}" />
+    <xacro:property name="leg1_angle_upper_x" value="${PI/4}" />
         
     <!-- Параметры для второго сегмента ноги -->
     <xacro:property name="leg2_angle_x" value="${PI/2}" />
+    <xacro:property name="leg2_angle_lower_x" value="${leg1_angle_lower_x}" />
+    <xacro:property name="leg2_angle_upper_x" value="${PI/12}" />
 </robot>
