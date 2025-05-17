@@ -1,8 +1,16 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    EmitEvent,
+    IncludeLaunchDescription,
+    RegisterEventHandler,
+)
+from launch.event_handlers import OnProcessStart
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
-from launch_ros.actions import Node
+from launch_ros.actions import LifecycleNode, Node
+from launch_ros.events.lifecycle import ChangeState
 from launch_ros.substitutions import FindPackageShare
+from lifecycle_msgs.msg import Transition
 
 package_name = "simulation"
 
@@ -61,16 +69,42 @@ def generate_launch_description():
     )
     tfconfig = LaunchConfiguration("tfconfig")
 
-    spawn_robot = Node(
+    spawn_node = LifecycleNode(
         package=package_name,
         executable="spawn_entity_wrapper",
         name="spawn_entity_wrapper",
-        namespace="spawn_entity_wrapper",
+        namespace="spawn",
         parameters=[
             {
                 "spawn_config": spawn_entity_config,
             }
         ],
+    )
+
+    activate_spawn = RegisterEventHandler(
+        OnProcessStart(
+            target_action=spawn_node,
+            on_start=[
+                EmitEvent(
+                    event=ChangeState(
+                        lifecycle_node_matcher=lambda node: node == spawn_node,
+                        transition_id=Transition.TRANSITION_CONFIGURE,
+                    )
+                ),
+                EmitEvent(
+                    event=ChangeState(
+                        lifecycle_node_matcher=lambda node: node == spawn_node,
+                        transition_id=Transition.TRANSITION_ACTIVATE,
+                    )
+                ),
+                EmitEvent(
+                    event=ChangeState(
+                        lifecycle_node_matcher=lambda node: node == spawn_node,
+                        transition_id=Transition.TRANSITION_DEACTIVATE,
+                    )
+                ),
+            ],
+        )
     )
 
     robot_state_launch = IncludeLaunchDescription(
@@ -99,7 +133,8 @@ def generate_launch_description():
     return LaunchDescription(
         [
             *launch_args,
-            spawn_robot,
+            spawn_node,
+            activate_spawn,
             robot_state_launch,
             control_launch,
         ]

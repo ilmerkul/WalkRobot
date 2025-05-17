@@ -1,7 +1,8 @@
-from typing import Dict
+from typing import Dict, Iterable
 
 import torch
-from dl_control.interface import State
+from dl_control.interface.entity import State
+from dl_control.stand_up.interface.entity import Action
 from interface.msg import AgrObs
 
 
@@ -33,6 +34,83 @@ def agr_obs_to_state(msg: AgrObs) -> State:
         foots_forces=torch.tensor([foots_forces]),
         position=torch.tensor([position]),
         velocity=torch.tensor([velocity]),
+    )
+
+
+def get_zero_state() -> State:
+    return State(
+        orientation={
+            "x": torch.tensor([0.0]),
+            "y": torch.tensor([0.0]),
+            "z": torch.tensor([0.0]),
+            "w": torch.tensor([0.0]),
+        },
+        angular_velocity={
+            "x": torch.tensor([0.0]),
+            "y": torch.tensor([0.0]),
+            "z": torch.tensor([0.0]),
+        },
+        linear_acceleration={
+            "x": torch.tensor([0.0]),
+            "y": torch.tensor([0.0]),
+            "z": torch.tensor([0.0]),
+        },
+        foots_forces=torch.tensor([[0.0] * (Action.dim // 2)]),
+        position=torch.tensor([[0.0] * Action.dim]),
+        velocity=torch.tensor([[0.0] * Action.dim]),
+    )
+
+
+def get_sum_batch_dim(states: Iterable[State]) -> int:
+    return sum(len(state) for state in states)
+
+
+def concat_state(states: Iterable[State]) -> State:
+    batch_dim = get_sum_batch_dim(states)
+    orientation = {
+        "x": torch.tensor([0.0] * batch_dim),
+        "y": torch.tensor([0.0] * batch_dim),
+        "z": torch.tensor([0.0] * batch_dim),
+        "w": torch.tensor([0.0] * batch_dim),
+    }
+    angular_velocity = {
+        "x": torch.tensor([0.0] * batch_dim),
+        "y": torch.tensor([0.0] * batch_dim),
+        "z": torch.tensor([0.0] * batch_dim),
+    }
+    linear_acceleration = {
+        "x": torch.tensor([0.0] * batch_dim),
+        "y": torch.tensor([0.0] * batch_dim),
+        "z": torch.tensor([0.0] * batch_dim),
+    }
+    foots_forces = torch.tensor([[0.0] * (Action.dim // 2)] * batch_dim)
+    position = torch.tensor([[0.0] * Action.dim] * batch_dim)
+    velocity = torch.tensor([[0.0] * Action.dim] * batch_dim)
+
+    curr_index = 0
+    dcts = [orientation, angular_velocity, linear_acceleration]
+    for state in states:
+        state_dcts = [
+            state.orientation,
+            state.angular_velocity,
+            state.linear_acceleration,
+        ]
+        for i, dct in enumerate(dcts):
+            for k, t in dct.items():
+                t[curr_index : (curr_index + len(state))] = state_dcts[i][k]
+        curr_index += len(state)
+
+    foots_forces = torch.concat([state.foots_forces for state in states], dim=0)
+    position = torch.concat([state.position for state in states], dim=0)
+    velocity = torch.concat([state.velocity for state in states], dim=0)
+
+    return State(
+        orientation=orientation,
+        angular_velocity=angular_velocity,
+        linear_acceleration=linear_acceleration,
+        foots_forces=foots_forces,
+        position=position,
+        velocity=velocity,
     )
 
 

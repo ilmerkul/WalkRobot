@@ -35,8 +35,6 @@ class AnglesToEffort(Node):
     def timer_callback(self):
         if self.last_effort_msg is not None:
             self.publisher.publish(self.last_effort_msg)
-        else:
-            self.get_logger().warn("last_effort_msg is None")
 
     def listener_callback(self, msg):
         command_msg = Float64MultiArray()

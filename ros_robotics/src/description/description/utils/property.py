@@ -1,7 +1,7 @@
 import math
 import os
 import xml.etree.ElementTree as ET
-from typing import Dict
+from typing import Dict, Tuple
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -54,3 +54,17 @@ def parse_file_xacro_constants(xml_file: str = robot_property_path) -> Dict[str,
 
     xml_content = "\n".join(xml_content)
     return parse_xacro_constants(xml_content)
+
+
+def parse_phi_border() -> Tuple[Tuple[float, float], Tuple[float, float]]:
+    constants = parse_file_xacro_constants()
+    phi1_border = (
+        constants["leg1_angle_lower_x"],
+        constants["leg1_angle_upper_x"],
+    )
+    phi2_border = (
+        constants["leg2_angle_lower_x"],
+        constants["leg2_angle_upper_x"],
+    )
+
+    return phi1_border, phi2_border
