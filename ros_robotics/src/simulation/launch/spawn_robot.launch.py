@@ -4,9 +4,10 @@ from launch.actions import (
     EmitEvent,
     IncludeLaunchDescription,
     RegisterEventHandler,
+    TimerAction,
 )
 from launch.event_handlers import OnProcessStart
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import LifecycleNode, Node
 from launch_ros.events.lifecycle import ChangeState
 from launch_ros.substitutions import FindPackageShare
@@ -45,6 +46,11 @@ def generate_launch_description():
         default_value="spawn_entity.yaml",
         description="Spawn entity config .yaml",
     )
+    entity_count_arg = DeclareLaunchArgument(
+        name="entity_count",
+        default_value="1",
+        description="Spawn entity count",
+    )
 
     launch_args = [
         gui_arg,
@@ -54,6 +60,7 @@ def generate_launch_description():
         xacro_file_arg,
         control_file_arg,
         spawn_entity_config_arg,
+        entity_count_arg,
     ]
 
     gui = LaunchConfiguration("gui")
@@ -68,15 +75,33 @@ def generate_launch_description():
         ]
     )
     tfconfig = LaunchConfiguration("tfconfig")
+    entity_count = LaunchConfiguration("entity_count")
+
+    robot_description_content = Command(
+        [
+            "xacro ",
+            PathJoinSubstitution(
+                [
+                    FindPackageShare("description"),
+                    "urdf",
+                    xacro_file,
+                ]
+            ),
+            " use_sim_time:=",
+            use_sim_time,
+        ]
+    )
 
     spawn_node = LifecycleNode(
         package=package_name,
-        executable="spawn_entity_wrapper",
-        name="spawn_entity_wrapper",
+        executable="spawn_entity",
+        name="spawn_entity",
         namespace="spawn",
         parameters=[
             {
                 "spawn_config": spawn_entity_config,
+                "robot_description_content": robot_description_content,
+                "entity_count": entity_count,
             }
         ],
     )
@@ -116,6 +141,7 @@ def generate_launch_description():
             "use_sim_time": use_sim_time,
             "tfconfig": tfconfig,
             "xacro_file": xacro_file,
+            "entity_count": entity_count,
         }.items(),
     )
 
@@ -127,6 +153,7 @@ def generate_launch_description():
             "control_file": control_file,
             "use_sim_time": use_sim_time,
             "xacro_file": xacro_file,
+            "entity_count": entity_count,
         }.items(),
     )
 
@@ -136,6 +163,6 @@ def generate_launch_description():
             spawn_node,
             activate_spawn,
             robot_state_launch,
-            control_launch,
+            TimerAction(period=2.0, actions=[control_launch]),
         ]
     )

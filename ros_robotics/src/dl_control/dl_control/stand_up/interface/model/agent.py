@@ -40,3 +40,6 @@ class StandUpAgent:
                 height=height,
             )
         return "continue"
+
+    def continue_state_dim_count_update(self, count: bool) -> str:
+        return self.trainer.continue_state_dim_count_update(count)

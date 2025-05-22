@@ -14,6 +14,9 @@ def agr_obs_to_state(msg: AgrObs) -> State:
     position = msg.joint_states.position
     velocity = msg.joint_states.velocity
 
+    if len(velocity) != len(position):
+        velocity = [0.0 for _ in range(len(position))]
+
     return State(
         orientation={
             "x": torch.tensor([[orientation.x]]),

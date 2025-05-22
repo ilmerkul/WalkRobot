@@ -3,16 +3,27 @@ import rclpy
 from control.utils import get_joints
 from interface.msg import AgrObs
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 
 class PlannerNode(Node):
     def __init__(self):
         super().__init__("planner_node")
-        self.agr_obs = self.create_subscription(
-            AgrObs, "/observation/aggregated_observation", self.observation_callback, 10
+        qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
         )
-        self.stand_up_pub = self.create_publisher(AgrObs, "stand_up", 10)
-        self.move_pub = self.create_publisher(AgrObs, "move", 10)
+        self.agr_obs = self.create_subscription(
+            AgrObs,
+            "observation/aggregated_observation",
+            self.observation_callback,
+            qos_profile=qos,
+        )
+        self.stand_up_pub = self.create_publisher(
+            AgrObs, "control/stand_up", qos_profile=qos
+        )
+        self.move_pub = self.create_publisher(AgrObs, "control/move", qos_profile=qos)
         self.joint_order = get_joints()
         self.MAX_ALLOWED_ANGLE = 0.6
 
@@ -23,8 +34,7 @@ class PlannerNode(Node):
         z = orientation.z
         w = orientation.w
 
-        roll, pitch, _ = self.quaternion_to_euler(x, y, z, w)
-
+        # roll, pitch, _ = self.quaternion_to_euler(x, y, z, w)
         # stand_up_condition = abs(roll) > self.MAX_ALLOWED_ANGLE or abs(pitch) > self.MAX_ALLOWED_ANGLE
         stand_up_condition = True
 

@@ -9,7 +9,7 @@ def generate_launch_description():
         package=package_name,
         executable="stand_up_node",
         name="stand_up_node",
-        namespace="control",
+        namespace="/tropy_spot_0/control",
     )
 
     return LaunchDescription(

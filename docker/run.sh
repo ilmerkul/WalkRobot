@@ -18,7 +18,5 @@ docker run -it \
   --env ROS_DOMAIN_ID=$ROS_DOMAIN_ID \
   --env ROS_LOCALHOST_ONLY=$ROS_LOCALHOST_ONLY \
   --volume="$PROJECT_DIR/ros_robotics:$CONTAINER_WORKDIR/ros_robotics" \
-  --volume="$PROJECT_DIR/poetry.lock:$CONTAINER_WORKDIR/poetry.lock" \
-  --volume="$PROJECT_DIR/pyproject.toml:$CONTAINER_WORKDIR/pyproject.toml" \
   --volume="$PROJECT_DIR/.env:$CONTAINER_WORKDIR/.env" \
-  "$DOCKER_IMAGE"
+  "$DOCKER_IMAGE" bash

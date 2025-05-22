@@ -39,12 +39,14 @@ build_planner:
 
 run_simulation: build_all
 	@echo "Running ROS simulation nodes..."
-	@bash -c "source $(WORKSPACE_ROOT)/install/setup.bash && \
+	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash && \
+			  source $(WORKSPACE_ROOT)/install/setup.bash && \
 	          ros2 launch $(PACKAGE_SIMULATION_NAME) gazebo.launch.py"
 
 run_description_display: build_description build_control
 	@echo "Running ROS description nodes..."
-	@bash -c "source $(WORKSPACE_ROOT)/install/setup.bash && \
+	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash \
+			  source $(WORKSPACE_ROOT)/install/setup.bash && \
 	          ros2 launch $(PACKAGE_DESCRIPTION_NAME) display.launch.py"
 
 test_control:

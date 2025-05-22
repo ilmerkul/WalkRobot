@@ -29,29 +29,22 @@ def generate_launch_description():
             LaunchConfiguration("imu_filter_config"),
         ]
     )
-
-    imu_relay = Node(
-        package="topic_tools",
-        executable="relay",
-        name="imu_topic_relay",
-        parameters=[
-            {"input_topic": "/imu_plugin/out", "output_topic": "/sensors/imu/data_raw"}
-        ],
-    )
+    use_sim_time = LaunchConfiguration("use_sim_time")
 
     imu_filter_madgwick = Node(
         package="imu_filter_madgwick",
         executable="imu_filter_madgwick_node",
-        name="imu_filter",
-        namespace="sensors",
+        name="imu_filter_madgwick",
+        namespace="/tropy_spot_0/sensors",
         output="both",
-        parameters=[imu_filter_config],
+        parameters=[
+            {"use_mag": False, "use_sim_time": use_sim_time},
+            imu_filter_config,
+        ],
         remappings=[
-            # Входные топики (подписка фильтра)
-            ("imu/data_raw", "/sensors/imu/data_raw"),  # Сырые данные IMU
-            ("imu/mag", "/sensors/imu/mag/data"),  # Данные магнитометра (если есть)
-            # Выходной топик (публикация фильтра)
-            ("imu/data", "/sensors/imu/filtered"),  # Отфильтрованные данные
+            ("imu/data_raw", "imu_plugin/out"),
+            ("imu/data", "imu/filtered"),
+            ("/tf", "/tropy_spot_0/observation/tf"),
         ],
     )
 
@@ -59,29 +52,21 @@ def generate_launch_description():
         package=package_name,
         executable="foot_contact_detector",
         name="foot_contact_detector",
-        namespace="sensors",
+        namespace="tropy_spot_0",
     )
 
     observation_aggregator = Node(
         package=package_name,
         executable="observation_aggregator",
         name="observation_aggregator",
-        namespace="observation",
-    )
-
-    delay_after_imu_relay = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action=imu_relay,
-            on_start=[imu_filter_madgwick],
-        )
+        namespace="tropy_spot_0",
     )
 
     return LaunchDescription(
         [
             *launch_args,
             foot_contact_detector_node,
-            imu_relay,
-            delay_after_imu_relay,
+            imu_filter_madgwick,
             observation_aggregator,
         ]
     )

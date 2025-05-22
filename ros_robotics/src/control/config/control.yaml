@@ -1,4 +1,4 @@
-controller_manager:
+/tropy_spot_0/control/controller_manager:
   ros__parameters:
     update_rate: 100
     use_sim_time: true
@@ -10,7 +10,7 @@ controller_manager:
     effort_controller:
       type: effort_controllers/JointGroupEffortController
 
-effort_controller:
+/tropy_spot_0/control/effort_controller:
   ros__parameters:
     joints:
       - front_right_leg1_corpus_joint

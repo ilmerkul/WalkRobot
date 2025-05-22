@@ -9,7 +9,7 @@ def generate_launch_description():
         package=package_name,
         executable="planner_node",
         name="planner_node",
-        namespace="planner",
+        namespace="tropy_spot_0",
     )
 
     return LaunchDescription(

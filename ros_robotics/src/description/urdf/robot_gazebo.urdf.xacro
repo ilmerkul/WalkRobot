@@ -35,14 +35,17 @@
             <sensor name="${prefix}_foot_force_sensor" type="force_torque">
                 <always_on>true</always_on>
                 <update_rate>100</update_rate>
-                <plugin filename="libgazebo_ros_ft_sensor.so" name="ft_sensor_plugin">
-                    <topic_name>/sensors/force/${prefix}_foot</topic_name>
+                <plugin filename="libgazebo_ros_ft_sensor.so" name="{prefix}_ft_sensor_plugin">
+                    <topic_name>${prefix}_foot_sensor</topic_name>
                     <frame_name>${prefix}_foot_force_sensor_link</frame_name>
                     <noise>
                         <type>gaussian</type>
                         <mean>0.0</mean>
                         <stddev>0.1</stddev>  <!-- Уровень шума -->
                     </noise>
+                    <ros>
+                        <namespace>$(arg namespace)/sensors/force</namespace>
+                    </ros>
                 </plugin>
             </sensor>
         </gazebo>
@@ -63,12 +66,15 @@
             <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
                 <topicName>imu/data_raw</topicName>
                 <bodyName>base_link</bodyName>
-                <updateRateHZ>10.0</updateRateHZ>
+                <updateRateHZ>100</updateRateHZ>
                 <gaussianNoise>0.005</gaussianNoise>
                 <xyzOffset>0 0 0</xyzOffset>
                 <rpyOffset>0 0 0</rpyOffset>
                 <frameName>base_link</frameName>
                 <initialOrientationAsReference>false</initialOrientationAsReference>
+                <ros>
+                    <namespace>$(arg namespace)/sensors</namespace>
+                </ros>
             </plugin>
             <pose>0 0 0 0 0 0</pose>
         </sensor>
@@ -76,8 +82,20 @@
 
     <gazebo>
         <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-            <parameters>$(find control)/config/robot.yaml</parameters>
+            <robot_param>robot_description</robot_param>
+            <robot_param_node>$(arg namespace)/robot_state_publisher</robot_param_node>
+            <parameters>$(find control)/config/control.yaml</parameters>
+            <hold_joints>true</hold_joints>
             <controller_manager_node_name>controller_manager</controller_manager_node_name>
+            <ros>
+                <namespace>$(arg namespace)/control</namespace>
+                <remapping>/tf:=$(arg namespace)/observation/tf</remapping>
+                <remapping>/tf_static:=$(arg namespace)/observation/tf_static</remapping>
+                <remapping>diffdrive_controller/odom:=odom</remapping>
+                <argument>--ros-args</argument>
+                <argument>--params-file</argument>
+                <argument>$(find control)/config/gazebo_ros2_control.yaml</argument>
+            </ros>
         </plugin>
     </gazebo>
 
@@ -85,6 +103,7 @@
         <plugin filename="libodometry_plugin.so" name="odometry_plugin">
             <frame>base_link</frame>
             <world_frame>fixed_world</world_frame>
+            <robot_namespace></robot_namespace>
         </plugin>
     </gazebo>
 </robot>

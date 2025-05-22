@@ -3,6 +3,7 @@ import rclpy
 from geometry_msgs.msg import WrenchStamped
 from interface.msg import FootContacts
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 
 class FootContactDetector(Node):
@@ -14,18 +15,23 @@ class FootContactDetector(Node):
 
         self.contacts = {prefix: False for prefix in self.prefixes}
 
+        qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+        )
         self._foot_subscriptions = [
             self.create_subscription(
                 WrenchStamped,
-                f"/sensors/force/{prefix}_foot",
+                f"sensors/force/{prefix}_foot",
                 self.create_foot_callback(prefix),
-                10,
+                qos_profile=qos,
             )
             for prefix in self.prefixes
         ]
 
         self.contacts_pub = self.create_publisher(
-            FootContacts, "force/foot_contact_state", 10
+            FootContacts, "sensors/force/foot_contact_state", qos_profile=qos
         )
 
         self.timer = self.create_timer(0.02, self.publish_contacts)

@@ -1,22 +1,33 @@
 import rclpy
 from interface.msg import AgrObs, FootContacts
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Imu, JointState
 
 
 class ObservationAggregator(Node):
     def __init__(self):
         super().__init__("obseravation_aggregator")
+        qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+        )
         self.imu_sub = self.create_subscription(
-            Imu, "/sensors/imu/filtered", self.imu_cb, 10
+            Imu, "sensors/imu/filtered", self.imu_cb, qos_profile=qos
         )
         self.joint_sub = self.create_subscription(
-            JointState, "/joint_states", self.joint_cb, 10
+            JointState, "observation/joint_states", self.joint_cb, qos_profile=qos
         )
         self.foot_sub = self.create_subscription(
-            FootContacts, "/sensors/force/foot_contact_state", self.foot_cb, 10
+            FootContacts,
+            "sensors/force/foot_contact_state",
+            self.foot_cb,
+            qos_profile=qos,
         )
-        self.pub = self.create_publisher(AgrObs, "aggregated_observation", 10)
+        self.pub = self.create_publisher(
+            AgrObs, "observation/aggregated_observation", qos_profile=qos
+        )
 
         self.last_imu = None
         self.last_joint = None

@@ -14,7 +14,6 @@ class TFWrapper(Node):
     def __init__(self):
         super().__init__("tf_wrapper")
 
-        # Декларируем параметры с описанием
         self.declare_parameters(
             namespace="",
             parameters=[
@@ -87,6 +86,14 @@ class TFWrapper(Node):
                     "",
                     ParameterDescriptor(
                         description="Path to YAML config file",
+                        type=ParameterType.PARAMETER_STRING,
+                    ),
+                ),
+                (
+                    "namespace",
+                    "",
+                    ParameterDescriptor(
+                        description="Namespace",
                         type=ParameterType.PARAMETER_STRING,
                     ),
                 ),
@@ -164,6 +171,7 @@ class TFWrapper(Node):
         params = self.get_parameters_by_prefix("")
         del params["config_file"]
         del params["use_sim_time"]
+        del params["namespace"]
         params = params.items()
         flags_cmd = ["" for _ in range(2 * len(params))]
 
@@ -180,11 +188,28 @@ class TFWrapper(Node):
                 frame_id = flag_value
             elif flag_name == "child-frame-id":
                 child_frame_id = flag_value
-        cmd = ["ros2", "run", "tf2_ros", "static_transform_publisher", *flags_cmd]
+
+        namespace = self.get_parameter("namespace").value
+        if not namespace.startswith("/"):
+            namespace = "/" + namespace
+        cmd = [
+            "ros2",
+            "run",
+            "tf2_ros",
+            "static_transform_publisher",
+            *flags_cmd,
+            "--ros-args",
+            "-r",
+            f"__ns:={namespace}",
+            "--remap",
+            f"/tf_static:={namespace}/tf_static",
+            "--remap",
+            f"/tf:={namespace}/tf",
+        ]
 
         self.tf_process = Popen(cmd)
         self.get_logger().info(
-            f"TF published: {frame_id} -> {child_frame_id} with {flags_cmd}"
+            f"TF published: {frame_id} -> {child_frame_id} with {cmd}"
         )
 
     def parameters_callback(self, params: List[rclpy.Parameter]):

@@ -54,6 +54,9 @@ class Trainer(ABC):
         self.w_joint_velocity = w_joint_velocity
         self.w_height = w_height
 
+        self.continue_state_dim_count = 0
+        self.continue_state_dim_count_max = 10
+
     def set_height(self, height: float) -> None:
         self.target_height = height
 
@@ -124,8 +127,8 @@ class Trainer(ABC):
         action: Action,
         height: torch.Tensor,
     ) -> str:
-        if state.get_current_obs_dim() != State.dim:
-            return "continue_state_dim"
+        self.continue_state_dim_count = 0
+
         reward = self.reward(state=state, height=height)
         done = self.done(state)
 
@@ -142,6 +145,14 @@ class Trainer(ABC):
             return "reset"
 
         return "continue"
+
+    def continue_state_dim_count_update(self, count: int) -> str:
+        self.continue_state_dim_count += count
+        if self.continue_state_dim_count > self.continue_state_dim_count_max:
+            self.continue_state_dim_count = 0
+            return "reset"
+        else:
+            return "continue"
 
     def memory_sample(self) -> Tuple[State, Action, torch.Tensor, State, torch.Tensor]:
         batch = random.sample(self.memory, self.batch_dim)

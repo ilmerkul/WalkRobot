@@ -1,5 +1,10 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    IncludeLaunchDescription,
+    TimerAction,
+)
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
@@ -42,6 +47,20 @@ def generate_launch_description():
         )
     )
 
+    # gazebo = IncludeLaunchDescription(
+    #            PathJoinSubstitution([FindPackageShare("gazebo_ros"), "launch", 'gazebo.launch.py']),
+    #         )
+
+    check_gazebo = ExecuteProcess(
+        cmd=[
+            "bash",
+            "-c",
+            "until ros2 service list | grep -q '/spawn_entity'; do sleep 1; echo 'Waiting for Gazebo...'; done",
+        ],
+        output="screen",
+        shell=False,  # Important: set to False when using list-form cmd
+    )
+
     spawn_robot_world = IncludeLaunchDescription(
         PathJoinSubstitution(
             [FindPackageShare("simulation"), "launch", "spawn_robot.launch.py"]
@@ -52,8 +71,10 @@ def generate_launch_description():
     return LaunchDescription(
         [
             *launch_args,
+            # gazebo,
             gzserver_cmd_launch,
             gzclient_cmd_launch,
-            spawn_robot_world,
+            check_gazebo,
+            TimerAction(period=2.0, actions=[spawn_robot_world]),
         ]
     )

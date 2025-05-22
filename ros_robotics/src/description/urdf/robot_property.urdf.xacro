@@ -38,4 +38,7 @@
     <xacro:property name="leg2_angle_x" value="${PI/2}" />
     <xacro:property name="leg2_angle_lower_x" value="${leg1_angle_lower_x}" />
     <xacro:property name="leg2_angle_upper_x" value="${PI/12}" />
+
+    <!-- Аргументы -->
+    <xacro:arg name="namespace" default="/tropy_spot_0" />
 </robot>

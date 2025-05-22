@@ -2,6 +2,7 @@
 import rclpy
 from control.utils import get_joints
 from rclpy.node import Node
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 
@@ -10,12 +11,18 @@ class AnglesToEffort(Node):
     def __init__(self):
         super().__init__("angles_to_effort")
 
+        qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+        )
+
         self.subscription = self.create_subscription(
-            JointState, "/control/angles_error", self.listener_callback, 10
+            JointState, "angles_error", self.listener_callback, qos_profile=qos
         )
 
         self.publisher = self.create_publisher(
-            Float64MultiArray, "/effort_controller/commands", 10
+            Float64MultiArray, "effort_controller/commands", qos_profile=qos
         )
 
         self.timer = self.create_timer(1 / 100, self.timer_callback)

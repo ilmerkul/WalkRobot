@@ -47,7 +47,8 @@ RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyri
 	&& apt-get update \
 	&& apt-get install -y ignition-fortress
 
-RUN apt-get install -y ros-${ROS_DISTRO}-ros-gz \
+RUN apt-get install -y \
+		ros-${ROS_DISTRO}-ros-gz \
 		ros-${ROS_DISTRO}-ros2-control \
 		ros-${ROS_DISTRO}-ros2-controllers \
 		ros-${ROS_DISTRO}-gazebo-ros-pkgs \
@@ -56,7 +57,7 @@ RUN apt-get install -y ros-${ROS_DISTRO}-ros-gz \
 		ros-${ROS_DISTRO}-imu-filter-madgwick \
 		ros-${ROS_DISTRO}-topic-tools
 
-# Install Python, pip, and poetry
+# Install Python packages
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -66,15 +67,13 @@ RUN apt-get update && apt-get install -y \
 RUN apt install -y python3-colcon-common-extensions
 
 WORKDIR ${CONTAINER_WORKDIR}
-COPY ./docker/install.sh /tmp/install.sh
-COPY ./poetry.lock .
-COPY ./pyproject.toml .
-RUN chmod +x /tmp/install.sh
-RUN /tmp/install.sh ${VENV_PATH}
+#COPY ./docker/install.sh /tmp/install.sh
+#COPY ./poetry.lock .
+#COPY ./pyproject.toml .
+#RUN chmod +x /tmp/install.sh
+#RUN /tmp/install.sh ${VENV_PATH}
 
 # Install torch
 RUN pip3 install torch --index-url https://download.pytorch.org/whl/cpu
 
 VOLUME ${CONTAINER_WORKDIR}
-
-CMD [ "/bin/bash" ]

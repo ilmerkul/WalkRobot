@@ -3,6 +3,7 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
     RegisterEventHandler,
+    TimerAction,
 )
 from launch.event_handlers import OnProcessExit, OnProcessStart
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
@@ -33,28 +34,21 @@ def generate_launch_description():
         default_value="sensors__imu_filter.yaml",
         description="Config file .yaml",
     )
+    entity_count_arg = DeclareLaunchArgument(
+        name="entity_count",
+        default_value="1",
+        description="Spawn entity count",
+    )
 
     launch_args = [
         use_sim_time_arg,
         control_file_arg,
         xacro_file_arg,
         imu_filter_config_arg,
+        entity_count_arg,
     ]
-    control_file = PathJoinSubstitution(
-        [
-            FindPackageShare(package_name),
-            "config",
-            LaunchConfiguration("control_file"),
-        ]
-    )
+
     use_sim_time = LaunchConfiguration("use_sim_time")
-    xacro_file = PathJoinSubstitution(
-        [
-            FindPackageShare(package_name_description),
-            "urdf",
-            LaunchConfiguration("xacro_file"),
-        ]
-    )
     imu_filter_config = PathJoinSubstitution(
         [
             FindPackageShare(package_name),
@@ -63,55 +57,21 @@ def generate_launch_description():
         ]
     )
 
-    robot_description_content = Command(
-        ["xacro ", xacro_file, " use_sim_time:=", use_sim_time]
-    )
-
-    ros2_control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[robot_description_content, control_file],
-        output="both",
-    )
-
-    joint_state_broadcaster_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "joint_state_broadcaster",
-            "--controller-manager",
-            "/controller_manager",
-            "--switch-timeout",
-            "10",
-        ],
-    )
-
-    robot_position_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "effort_controller",
-            "--controller-manager",
-            "/controller_manager",
-            "--param-file",
-            control_file,
-            "--switch-timeout",
-            "10",
-        ],
+    effort_control = IncludeLaunchDescription(
+        PathJoinSubstitution(
+            [
+                FindPackageShare(package_name),
+                "launch",
+                "effort_control.launch.py",
+            ]
+        ),
     )
 
     angles_to_effort_node = Node(
         package=package_name,
         executable="angles_to_effort_node",
         name="angles_to_effort_node",
-        namespace="control",
-    )
-
-    delay_after_ros2_control_node = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action=ros2_control_node,
-            on_start=[joint_state_broadcaster_spawner],
-        )
+        namespace="/tropy_spot_0/control",
     )
 
     observation_prepare = IncludeLaunchDescription(
@@ -140,29 +100,13 @@ def generate_launch_description():
         ),
     )
 
-    delay_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[
-                robot_position_controller_spawner,
-                observation_prepare,
-            ],
-        )
-    )
-
-    delay_after_robot_position_controller_spawner = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=robot_position_controller_spawner,
-            on_exit=[planner, stand_up_nn, angles_to_effort_node],
-        )
-    )
-
     return LaunchDescription(
         [
             *launch_args,
-            ros2_control_node,
-            delay_after_ros2_control_node,
-            delay_after_joint_state_broadcaster_spawner,
-            delay_after_robot_position_controller_spawner,
+            observation_prepare,
+            effort_control,
+            planner,
+            stand_up_nn,
+            angles_to_effort_node,
         ]
     )
