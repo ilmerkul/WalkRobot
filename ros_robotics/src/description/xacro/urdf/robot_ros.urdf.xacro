@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <ros2_control name="GazeboSystem" type="system">
+        <hardware>
+            <xacro:if value="$(arg exclude_ros2_control)">
+                <plugin>mock_components/GenericSystem</plugin>
+            </xacro:if>
+            <xacro:unless value="$(arg exclude_ros2_control)">
+                <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+            </xacro:unless>
+        </hardware>
+        <xacro:macro name="joint_command" params="prefix">
+            <joint name="${prefix}_leg1_to_base_joint">
+                <command_interface name="effort"/>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
+            <joint name="${prefix}_leg2_to_leg1_joint">
+                <command_interface name="effort"/>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
+            <joint name="${prefix}_leg3_to_leg2_joint">
+                <command_interface name="effort"/>
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
+        </xacro:macro>
+        
+        <xacro:joint_command prefix="front_right"/>
+        <xacro:joint_command prefix="back_right"/>
+        <xacro:joint_command prefix="front_left"/>
+        <xacro:joint_command prefix="back_left"/>
+    </ros2_control>
+</robot>

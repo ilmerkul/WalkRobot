@@ -24,6 +24,7 @@ setup(
     entry_points={
         "console_scripts": [
             "stand_up_node = dl_control.stand_up.stand_up_node:main",
+            "stand_node = dl_control.stand.stand_node:main",
         ],
     },
 )

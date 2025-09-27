@@ -1,12 +1,16 @@
 import math
 import os
 import xml.etree.ElementTree as ET
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
+import yaml
 from ament_index_python.packages import get_package_share_directory
 
 pkg_path = get_package_share_directory("description")
-robot_property_path = os.path.join(pkg_path, "urdf", "robot_property.urdf.xacro")
+robot_property_path = os.path.join(pkg_path, "xacro", "robot_property.xacro")
+
+pkg_control_path = get_package_share_directory("control")
+config_controller_path = os.path.join(pkg_control_path, "config", "control.yaml")
 
 
 def evaluate_expression(expr, constants):
@@ -56,15 +60,50 @@ def parse_file_xacro_constants(xml_file: str = robot_property_path) -> Dict[str,
     return parse_xacro_constants(xml_content)
 
 
-def parse_phi_border() -> Tuple[Tuple[float, float], Tuple[float, float]]:
+def parse_joint_class_angle_borders() -> Dict[str, Tuple[float, float]]:
     constants = parse_file_xacro_constants()
-    phi1_border = (
-        constants["leg1_angle_lower_x"],
-        constants["leg1_angle_upper_x"],
-    )
-    phi2_border = (
-        constants["leg2_angle_lower_x"],
-        constants["leg2_angle_upper_x"],
-    )
+    joint_classes = get_joint_classes()
 
-    return phi1_border, phi2_border
+    angle_border = dict()
+
+    angles = list(filter(lambda x: "angle" in x, constants.keys()))
+    for joint_class in joint_classes:
+        class_angle_names = list(filter(lambda x: joint_class in x, angles))
+
+        class_angle_lower = list(filter(lambda x: "lower" in x, class_angle_names))
+        if len(class_angle_lower) == 0:
+            continue
+        class_angle_lower = class_angle_lower[0]
+
+        class_angle_upper = list(filter(lambda x: "upper" in x, class_angle_names))
+        if len(class_angle_upper) == 0:
+            continue
+        class_angle_upper = class_angle_upper[0]
+
+        angle_border[joint_class] = (
+            constants[class_angle_lower],
+            constants[class_angle_upper],
+        )
+
+    return angle_border
+
+
+def get_joint_classes() -> List[str]:
+    return ["servo", "leg1", "leg2"]
+
+
+def get_joints(file_path: str = config_controller_path) -> List[str]:
+    with open(file_path, "r") as file:
+        config = yaml.safe_load(file)
+
+    return config[list(config.keys())[0]]["effort_controller"]["ros__parameters"][
+        "joints"
+    ]
+
+
+DIM_XYZ = 3
+DIM_XYZW = 4
+DIM_FOOTS = 4
+JOINT_ORDER = get_joints()
+DIM_JOINT = len(JOINT_ORDER)
+XACRO_CONSTANTS = parse_file_xacro_constants()

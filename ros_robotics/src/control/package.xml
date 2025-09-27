@@ -8,13 +8,15 @@
   <license>MIT</license>
 
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>ros2launch</exec_depend>
-  <exec_depend>urdf_launch</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>interface</exec_depend>
-  <exec_depend>dl_control</exec_depend>
-  <exec_depend>planner</exec_depend>
+  <exec_depend>gazebo_msgs</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>ros2_control</exec_depend>
+  <exec_depend>ros2_controllers</exec_depend>
+  <exec_depend>imu_filter_madgwick</exec_depend>
+
+  <exec_depend>python-numpy</exec_depend>
+
+  <exec_depend>description</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

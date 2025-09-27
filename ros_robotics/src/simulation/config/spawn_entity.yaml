@@ -9,3 +9,4 @@ spawn:
   topic: "/robot_description"
   timeout: 10
   spawn_service_timeout: 10
+  x_distance: 3

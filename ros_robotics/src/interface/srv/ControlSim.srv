@@ -1,0 +1,5 @@
+string entity_name
+ControlSimMessage control_message
+---
+bool success
+string message

@@ -1,8 +1,7 @@
 from math import acos, atan, cos, pi, sin
 from typing import List, Tuple
 
-from control.utils import get_joints
-from description.utils import parse_file_xacro_constants
+from description.utils import JOINT_ORDER, XACRO_CONSTANTS
 
 zero_angles: List[float] = [0.0, 0.0, 0.0, 0.0]
 
@@ -15,8 +14,8 @@ class InverseKinematics:
         phi2: List[float] = zero_angles,
     ):
 
-        self.constants = parse_file_xacro_constants()
-        self.joint_order = get_joints()
+        self.constants = XACRO_CONSTANTS
+        self.joint_order = JOINT_ORDER
 
         self.l1 = self.constants["front_leg_length1"]
         self.l2 = self.constants["front_leg_length2"]

@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <gazebo reference="base_link">
+        <mu1>0.5</mu1>
+        <mu2>0.3</mu2>
+        <kp>500000</kp>
+        <kd>10000</kd>
+    </gazebo>
+
+    <xacro:macro name="leg_color_gazebo" params="prefix">
+        <gazebo reference="${prefix}_leg1_link">
+            <mu1>0.5</mu1>
+            <mu2>0.3</mu2>
+            <kp>500000</kp>
+            <kd>10000</kd>
+        </gazebo>
+        <gazebo reference="${prefix}_leg2_link">
+            <mu1>0.5</mu1>
+            <mu2>0.3</mu2>
+            <kp>500000</kp>
+            <kd>10000</kd>
+        </gazebo>
+        <gazebo reference="${prefix}_foot_link">
+            <mu1>0.5</mu1>
+            <mu2>0.3</mu2>
+            <kp>500000</kp>
+            <kd>10000</kd>
+        </gazebo>
+
+        <gazebo reference="${prefix}_leg2_to_leg1_joint">
+            <sensor name="${prefix}_foot_joint_force_torque" type="force_torque">
+                <always_on>true</always_on>
+                <update_rate>100</update_rate>
+                <visualize>false</visualize>
+                <topic>$(arg namespace)/sensors/force_torque/${prefix}_foot_joint</topic>
+                <enable_metrics>false</enable_metrics>
+                <pose>0 0 0 0 0 0</pose>
+                <force_torque>
+                    <frame>child</frame>
+                    <measure_direction>child_to_parent</measure_direction>
+                    <force>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0</mean>
+                                <stddev>0.001</stddev>
+                                <frame>child</frame>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0</mean>
+                                <stddev>0.001</stddev>
+                                <frame>child</frame>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0</mean>
+                                <stddev>0.001</stddev>
+                                <frame>child</frame>
+                            </noise>
+                        </z>
+                    </force>
+                </force_torque>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:leg_color_gazebo prefix="front_right"/>
+    <xacro:leg_color_gazebo prefix="back_right"/>
+    <xacro:leg_color_gazebo prefix="front_left"/>
+    <xacro:leg_color_gazebo prefix="back_left"/>
+
+    <gazebo reference="base_link">
+        <gravity>false</gravity>
+        <sensor name="imu_sensor" type="imu">
+            <always_on>true</always_on>
+            <update_rate>100</update_rate>
+            <visualize>false</visualize>
+            <topic>$(arg namespace)/sensors/imu/raw</topic>
+            <enable_metrics>false</enable_metrics>
+            <pose>0 0 0 0 0 0</pose>
+            <imu>
+                <angular_velocity>
+                    <x>
+                        <noise type="gaussian">
+                            <mean>0</mean>
+                            <stddev>0.001</stddev>
+                            <frame>child</frame>
+                        </noise>
+                    </x>
+                    <y>
+                        <noise type="gaussian">
+                            <mean>0</mean>
+                            <stddev>0.001</stddev>
+                            <frame>child</frame>
+                        </noise>
+                    </y>
+                    <z>
+                        <noise type="gaussian">
+                            <mean>0</mean>
+                            <stddev>0.001</stddev>
+                            <frame>child</frame>
+                        </noise>
+                    </z>
+                </angular_velocity>
+                <linear_acceleration>
+                    <x>
+                        <noise type="gaussian">
+                            <mean>0</mean>
+                            <stddev>0.001</stddev>
+                            <frame>child</frame>
+                        </noise>
+                    </x>
+                    <y>
+                        <noise type="gaussian">
+                            <mean>0</mean>
+                            <stddev>0.001</stddev>
+                            <frame>child</frame>
+                        </noise>
+                    </y>
+                    <z>
+                        <noise type="gaussian">
+                            <mean>0</mean>
+                            <stddev>0.001</stddev>
+                            <frame>child</frame>
+                        </noise>
+                    </z>
+                </linear_acceleration>
+            </imu>
+        </sensor>
+    </gazebo>
+
+    <xacro:unless value="$(arg exclude_ros2_control)">
+        <gazebo>
+            <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+                <robot_param>/$(arg namespace)/description/robot_description</robot_param>
+                <robot_param_node>$(arg namespace)/description/robot_state_publisher</robot_param_node>
+                <parameters>$(find control)/config/control.yaml</parameters>
+                <hold_joints>true</hold_joints>
+                <controller_manager_node_name>controller_manager</controller_manager_node_name>
+                <ros>
+                    <namespace>$(arg namespace)/control</namespace>
+                    <remapping>robot_description:=$(arg namespace)/description/robot_description</remapping>
+                    <remapping>/tf:=$(arg namespace)/description/tf</remapping>
+                    <remapping>/tf_static:=$(arg namespace)/description/tf_static</remapping>
+                    <remapping>diffdrive_controller/odom:=odom</remapping>
+                    <argument>--ros-args</argument>
+                    <argument>--params-file</argument>
+                    <argument>$(find control)/config/gazebo_ros2_control.yaml</argument>
+                </ros>
+            </plugin>
+        </gazebo>
+    </xacro:unless>
+</robot>

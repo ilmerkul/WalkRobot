@@ -2,7 +2,13 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, RegisterEventHandler
 from launch.conditions import IfCondition, UnlessCondition
 from launch.event_handlers import OnProcessStart
-from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (
+    Command,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+    PythonExpression,
+    TextSubstitution,
+)
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -10,11 +16,9 @@ package_name = "description"
 
 
 def generate_launch_description():
-    gui_arg = DeclareLaunchArgument(
-        name="gui", description="Use gui gazebo", default_value="true"
-    )
+    gui_arg = DeclareLaunchArgument(name="gui", description="Use gui gazebo")
     use_sim_time_arg = DeclareLaunchArgument(
-        "use_sim_time", description="Use sim (gazebo) time", default_value="true"
+        "use_sim_time", description="Use sim (gazebo) time"
     )
     tfconfig_arg = DeclareLaunchArgument(
         name="tfconfig",
@@ -26,18 +30,17 @@ def generate_launch_description():
         default_value="robot.urdf.xacro",
         description="Name of xacro file (if use_urdf=false)",
     )
-    entity_count_arg = DeclareLaunchArgument(
-        name="entity_count",
-        default_value="1",
-        description="Spawn entity count",
+    robot_namespace_arg = DeclareLaunchArgument(
+        name="robot_namespace",
+        description="robot namespace",
     )
 
     launch_args = [
+        robot_namespace_arg,
         gui_arg,
         use_sim_time_arg,
         tfconfig_arg,
         xacro_file_arg,
-        entity_count_arg,
     ]
 
     gui = LaunchConfiguration("gui")
@@ -45,6 +48,7 @@ def generate_launch_description():
     xacro_file = PathJoinSubstitution(
         [
             FindPackageShare(package_name),
+            "xacro",
             "urdf",
             LaunchConfiguration("xacro_file"),
         ]
@@ -56,28 +60,26 @@ def generate_launch_description():
             LaunchConfiguration("tfconfig"),
         ]
     )
-    entity_count = LaunchConfiguration("entity_count")
+    robot_namespace = LaunchConfiguration("robot_namespace")
 
     robot_description_content = Command(
         [
             "xacro ",
             xacro_file,
-            " use_sim_time:=",
-            use_sim_time,
-            " hardware_plugin:=gazebo_ros2_control/GazeboSystem",
-            " namespace:=",
-            "tropy_spot_0",
-            " sim_gazebo:=true",
-            " enable_imu:=true",
-            " verbose:=true",
+            " namespace:=/",
+            robot_namespace,
+            " exclude_gazebo_tags:=false",
+            " exclude_ros2_control:=false",
         ]
     )
+
+    robot_package_namespace = PathJoinSubstitution(["", robot_namespace, package_name])
 
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         name="robot_state_publisher",
-        namespace="tropy_spot_0",
+        namespace=robot_package_namespace,
         parameters=[
             {
                 "use_sim_time": use_sim_time,
@@ -85,63 +87,56 @@ def generate_launch_description():
             }
         ],
         remappings=[
-            ("/tf_static", "/tropy_spot_0/observation/tf_static"),
-            ("/tf", "/tropy_spot_0/observation/tf"),
-            ("robot_description", "observation/robot_description"),
-            ("joint_states", "observation/joint_states"),
+            ("/tf_static", "tf_static"),
+            ("/tf", "tf"),
+            ("robot_description", "robot_description"),
+            ("joint_states", "joint_states"),
         ],
         output="both",
     )
 
-    joint_state_publisher_node = Node(
-        package="joint_state_publisher",
-        executable="joint_state_publisher",
-        name="joint_state_publisher",
-        namespace="/tropy_spot_0/observation",
-        output="both",
-        condition=UnlessCondition(gui),
+    joint_state_publisher_node_condition = PythonExpression(
+        [
+            '"joint_state_publisher_gui" if "',
+            gui,
+            '" in ("true", "True", "1") else "joint_state_publisher"',
+        ]
     )
 
-    joint_state_publisher_gui_node = Node(
-        package="joint_state_publisher_gui",
-        executable="joint_state_publisher_gui",
-        name="joint_state_publisher_gui",
-        namespace="/tropy_spot_0/observation",
+    joint_state_publisher_node = Node(
+        package=joint_state_publisher_node_condition,
+        executable=joint_state_publisher_node_condition,
+        name="joint_state_publisher",
+        namespace=robot_package_namespace,
         output="both",
-        condition=IfCondition(gui),
+        remappings=[
+            ("joint_states", "joint_states"),
+        ],
     )
 
     tf = Node(
         package=package_name,
         executable="tf_wrapper",
         name="static_transform_publisher",
-        namespace="/tropy_spot_0/observation",
+        namespace=robot_package_namespace,
         output="both",
         parameters=[
-            {"config_file": tfconfig, "namespace": "/tropy_spot_0/observation"}
+            {
+                "config_file": tfconfig,
+                "namespace": robot_package_namespace,
+            }
         ],
         remappings=[
-            ("/tf_static", "/tropy_spot_0/observation/tf_static"),
-            ("/tf", "/tropy_spot_0/observation/tf"),
+            ("/tf_static", "tf_static"),
+            ("/tf", "tf"),
         ],
-    )
-
-    joint_state_publisher_nodes = [
-        joint_state_publisher_node,
-        joint_state_publisher_gui_node,
-    ]
-
-    delay_after_imu_relay = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action=robot_state_publisher_node,
-            on_start=[*joint_state_publisher_nodes, tf],
-        )
     )
 
     return LaunchDescription(
         [
             *launch_args,
             robot_state_publisher_node,
-            delay_after_imu_relay,
+            joint_state_publisher_node,
+            tf,
         ]
     )

@@ -5,8 +5,6 @@ export
 
 build_all: build_interface build_description build_dl_control build_planner build_control build_simulation
 
-test_all: test_control test_simulation test_description test_dl_control test_planner
-
 build_interface:
 	@echo "Building interface package..."
 	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash && \
@@ -37,17 +35,22 @@ build_planner:
 	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash && \
 	          colcon build --packages-select $(PACKAGE_PLANNER_NAME) --symlink-install"
 
-run_simulation: build_all
+run_sim_multi_robot:
 	@echo "Running ROS simulation nodes..."
 	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash && \
 			  source $(WORKSPACE_ROOT)/install/setup.bash && \
-	          ros2 launch $(PACKAGE_SIMULATION_NAME) gazebo.launch.py"
+	          ros2 launch $(PACKAGE_SIMULATION_NAME) sim_multi_robot.launch.py > launch.log"
 
-run_description_display: build_description build_control
+run_description_display:
 	@echo "Running ROS description nodes..."
 	@bash -c "source /opt/ros/$(ROS_DISTRO)/setup.bash \
 			  source $(WORKSPACE_ROOT)/install/setup.bash && \
-	          ros2 launch $(PACKAGE_DESCRIPTION_NAME) display.launch.py"
+	          ros2 launch $(PACKAGE_DESCRIPTION_NAME) display.launch.py > launch.log"
+
+run_tensorboard:
+	@bash -c "tensorboard --logdir=$(WORKSPACE_ROOT)/src/dl_control/dl_control/stand_up/SAC/torch/exp --host 0.0.0.0 --port $(TENSORBOARD_PORT)"
+
+test_all: test_control test_simulation test_description test_dl_control test_planner
 
 test_control:
 	@echo "Running tests..."

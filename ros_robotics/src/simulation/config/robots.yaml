@@ -1,0 +1,11 @@
+robots:
+  - name: 'tropy_spot0'
+    x_pose: '0'
+    y_pose: '0'
+    z_pose: '0.015'
+    Y_pose: '0.015'
+  - name: 'tropy_spot1'
+    x_pose: '0'
+    y_pose: '2'
+    z_pose: '0.015'
+    Y_pose: '0.015'

@@ -10,9 +10,9 @@ build:
 
 up:
 	@echo "Running Docker image..."
-	@./docker/run.sh
+	@bash -c "cd docker/compose && docker compose up"
 
-up_gui: xhost_allow
+up_bash: xhost_allow
 	@echo "Running Docker image..."
 	@./docker/run_gui.sh
 

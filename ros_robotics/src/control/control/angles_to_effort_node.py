@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rclpy
-from control.utils import get_joints
+from description.utils import JOINT_ORDER
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import JointState
@@ -28,7 +28,7 @@ class AnglesToEffort(Node):
         self.timer = self.create_timer(1 / 100, self.timer_callback)
         self.last_effort_msg = None
 
-        self.joint_order = get_joints()
+        self.joint_order = JOINT_ORDER
 
         self.pid_gains = {
             "kp": 50.0,

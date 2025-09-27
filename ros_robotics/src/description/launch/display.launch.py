@@ -47,6 +47,7 @@ def generate_launch_description():
     xacro_file_path = PathJoinSubstitution(
         [
             FindPackageShare(package_name),
+            "xacro",
             "urdf",
             LaunchConfiguration("xacro_file"),
         ]
@@ -79,6 +80,7 @@ def generate_launch_description():
             "use_sim_time": use_sim_time,
             "tfconfig": tfconfig,
             "xacro_file": xacro_file,
+            "robot_namespace": "",
         }.items(),
     )
 

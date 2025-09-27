@@ -1,0 +1,6 @@
+uint8 PAUSE_MSG=0
+uint8 UNPAUSE_MSG=1
+uint8 RESET_MSG=2
+uint8 REMOVE_MSG=3
+
+uint8 type

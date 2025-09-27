@@ -21,5 +21,6 @@ docker run -it \
   --env ROS_LOCALHOST_ONLY=$ROS_LOCALHOST_ONLY \
   --volume="$PROJECT_DIR/ros_robotics:$CONTAINER_WORKDIR/ros_robotics" \
   --volume="$PROJECT_DIR/.env:$CONTAINER_WORKDIR/.env" \
+  -p $TENSORBOARD_PORT:$TENSORBOARD_PORT \
   $X11_SUPPORT \
   "$DOCKER_IMAGE" bash

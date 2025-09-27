@@ -7,18 +7,11 @@
   <maintainer email="merkuloviv@my.msu.ru">merkul</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>xacro</buildtool_depend>
-
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>xacro</exec_depend>
-  <exec_depend>ros2launch</exec_depend>
-  <exec_depend>urdf_launch</exec_depend>
-  <exec_depend>gazebo_ros</exec_depend>
-  <exec_depend>gazebo_ros_pkgs</exec_depend>
-
-  <exec_depend>interface</exec_depend>
-  <exec_depend>description</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>ros_gz_interfaces</exec_depend>
   <exec_depend>control</exec_depend>
+  <exec_depend>description</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

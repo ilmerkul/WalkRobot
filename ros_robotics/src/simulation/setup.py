@@ -36,6 +36,7 @@ setup(
         "console_scripts": [
             "spawn_entity_wrapper = simulation.spawn_entity_wrapper:main",
             "spawn_entity = simulation.spawn_entity:main",
+            "control_sim = simulation.control_sim:main",
         ],
     },
 )

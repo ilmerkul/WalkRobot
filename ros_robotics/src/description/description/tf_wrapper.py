@@ -153,8 +153,6 @@ class TFWrapper(Node):
         return False
 
     def update_transform(self):
-        """Обновление трансформации (перезапуск publisher)"""
-        # Убиваем предыдущий процесс
         if self.tf_process:
             self.tf_process.terminate()
             try:
@@ -162,55 +160,55 @@ class TFWrapper(Node):
             except:
                 self.tf_process.kill()
 
-        # flags_name = [
-        #    'x', 'y', 'z',
-        #    'roll', 'pitch', 'yaw',
-        #    'frame-id', 'child-frame-id'
-        # ]
-
         params = self.get_parameters_by_prefix("")
-        del params["config_file"]
-        del params["use_sim_time"]
-        del params["namespace"]
-        params = params.items()
-        flags_cmd = ["" for _ in range(2 * len(params))]
+        transform_params = {
+        k: v for k, v in params.items() 
+        if k not in ["config_file", "use_sim_time", "namespace", "start_type_description_service"]
+    }
 
+        flags_cmd = []
         frame_id = ""
         child_frame_id = ""
-        for i, flag in enumerate(params):
-            flag_name, flag_param = flag
-            flag_value = str(flag_param.value)
+    
+        for param_name, param in transform_params.items():
+            flag_name = param_name
+            flag_value = str(param.value)
 
-            flags_cmd[2 * i] = f"--{flag_name}"
-            flags_cmd[2 * i + 1] = flag_value
+            flags_cmd.extend([f"--{flag_name}", flag_value])
 
-            if flag_name == "frame-id":
+            if param_name == "frame-id":
                 frame_id = flag_value
-            elif flag_name == "child-frame-id":
+            elif param_name == "child-frame-id":
                 child_frame_id = flag_value
 
         namespace = self.get_parameter("namespace").value
-        if not namespace.startswith("/"):
-            namespace = "/" + namespace
-        cmd = [
-            "ros2",
-            "run",
-            "tf2_ros",
-            "static_transform_publisher",
-            *flags_cmd,
+        if namespace:  # Only add namespace if it's not empty
+            if not namespace.startswith("/"):
+                namespace = f"/{namespace}"
+            ros_args = [
             "--ros-args",
-            "-r",
-            f"__ns:={namespace}",
-            "--remap",
-            f"/tf_static:={namespace}/tf_static",
-            "--remap",
-            f"/tf:={namespace}/tf",
+            "-r", f"__ns:={namespace}",
+            "--remap", f"/tf_static:={namespace}/tf_static",
+            "--remap", f"/tf:={namespace}/tf",
         ]
+        else:
+            ros_args = []
 
+        cmd = [
+        "ros2",
+        "run",
+        "tf2_ros",
+        "static_transform_publisher",
+        *flags_cmd,
+        *ros_args
+    ]
+
+        self.get_logger().info(f"Launching TF publisher with command: {" ".join(cmd)}")
+    
         self.tf_process = Popen(cmd)
         self.get_logger().info(
-            f"TF published: {frame_id} -> {child_frame_id} with {cmd}"
-        )
+        f"TF published: {frame_id} -> {child_frame_id}"
+    )
 
     def parameters_callback(self, params: List[rclpy.Parameter]):
         """Обработчик изменения параметров"""

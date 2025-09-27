@@ -14,7 +14,16 @@ setup(
         (os.path.join("share", package_name), ["package.xml"]),
         (os.path.join("share", package_name, "launch"), glob.glob("launch/*")),
         (os.path.join("share", package_name, "rviz"), glob.glob("rviz/*")),
-        (os.path.join("share", package_name, "urdf"), glob.glob("urdf/*")),
+        (os.path.join("share", package_name, "meshes"), glob.glob("meshes/*.STL")),
+        (os.path.join("share", package_name, "xacro"), glob.glob("xacro/*.xacro")),
+        (
+            os.path.join("share", package_name, "xacro", "urdf"),
+            glob.glob("xacro/urdf/*.xacro"),
+        ),
+        (
+            os.path.join("share", package_name, "xacro", "sdf"),
+            glob.glob("xacro/sdf/*.xacro"),
+        ),
         (os.path.join("share", package_name, "config"), glob.glob("config/*")),
     ],
     install_requires=["setuptools"],

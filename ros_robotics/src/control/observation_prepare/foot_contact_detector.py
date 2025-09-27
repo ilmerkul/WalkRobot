@@ -13,6 +13,7 @@ class FootContactDetector(Node):
         self.prefixes = ["front_right", "back_right", "front_left", "back_left"]
         self.force_threshold = 5.0
 
+        self.forces = {prefix: 0.0 for prefix in self.prefixes}
         self.contacts = {prefix: False for prefix in self.prefixes}
 
         qos = QoSProfile(
@@ -23,7 +24,7 @@ class FootContactDetector(Node):
         self._foot_subscriptions = [
             self.create_subscription(
                 WrenchStamped,
-                f"sensors/force/{prefix}_foot",
+                f"sensors/force_torque/{prefix}_foot_joint",
                 self.create_foot_callback(prefix),
                 qos_profile=qos,
             )
@@ -31,7 +32,7 @@ class FootContactDetector(Node):
         ]
 
         self.contacts_pub = self.create_publisher(
-            FootContacts, "sensors/force/foot_contact_state", qos_profile=qos
+            FootContacts, "sensors/force_torque/foot_contact_state", qos_profile=qos
         )
 
         self.timer = self.create_timer(0.02, self.publish_contacts)
@@ -39,14 +40,17 @@ class FootContactDetector(Node):
     def create_foot_callback(self, prefix):
         def callback(msg):
             force_z = msg.wrench.force.z
+            self.forces[prefix] = (
+                msg.wrench.force.x**2 + msg.wrench.force.y**2 + msg.wrench.force.z**2
+            ) ** 0.5
             self.contacts[prefix] = abs(force_z) > self.force_threshold
 
         return callback
 
     def publish_contacts(self):
         msg = FootContacts()
+        msg.forces = [self.forces[prefix] for prefix in self.prefixes]
         msg.contacts = [self.contacts[prefix] for prefix in self.prefixes]
-        msg.forces = [0.5 for prefix in self.prefixes]
         self.contacts_pub.publish(msg)
 
 

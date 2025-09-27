@@ -1,3 +1,5 @@
+string name
+
 sensor_msgs/Imu imu
 
 FootContacts foots

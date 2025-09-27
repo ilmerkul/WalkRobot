@@ -17,16 +17,16 @@ class ObservationAggregator(Node):
             Imu, "sensors/imu/filtered", self.imu_cb, qos_profile=qos
         )
         self.joint_sub = self.create_subscription(
-            JointState, "observation/joint_states", self.joint_cb, qos_profile=qos
+            JointState, "description/joint_states", self.joint_cb, qos_profile=qos
         )
         self.foot_sub = self.create_subscription(
             FootContacts,
-            "sensors/force/foot_contact_state",
+            "sensors/force_torque/foot_contact_state",
             self.foot_cb,
             qos_profile=qos,
         )
         self.pub = self.create_publisher(
-            AgrObs, "observation/aggregated_observation", qos_profile=qos
+            AgrObs, "/observation/aggregated", qos_profile=qos
         )
 
         self.last_imu = None
@@ -50,10 +50,15 @@ class ObservationAggregator(Node):
             return
 
         msg = AgrObs()
+        msg.name = self.get_namespace()
         msg.imu = self.last_imu
         msg.joint_states = self.last_joint
         msg.foots = self.last_foot
         self.pub.publish(msg)
+
+        self.last_imu = None
+        self.last_joint = None
+        self.last_foot = None
 
 
 def main(args=None):

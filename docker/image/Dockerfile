@@ -1,79 +1,50 @@
-FROM ubuntu:jammy-20250404
+FROM ros:jazzy
 
 ENV DEBIAN_FRONTEND noninteractive
 
-ENV ROS_DISTRO humble
+ENV ROS_DISTRO jazzy
 ENV ROS_VERSION 2
 ENV ROS_DOMAIN_ID 0
 ENV ROS_LOCALHOST_ONLY 1
+
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+ENV GZ_VERSION harmonic
 
 ENV CONTAINER_WORKDIR /home/ubuntu/project
 ENV WORKSPACE_ROOT="${CONTAINER_WORKDIR}/ros_robotics"
 ENV VENV_PATH="${WORKSPACE_ROOT}/venv"
 
-# Install essentials
-RUN apt-get update \
-	&& apt-get upgrade -y \
-	&& apt-get install -y \
-		apt-utils \
-		# Sound
-		libasound2-plugins \
-		alsa-utils 
+ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
-# Setup ROS2 from source as per
-RUN apt update && apt install -y locales \
-    && locale-gen en_US en_US.UTF-8 \
-    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 \
-    && export LANG=en_US.UTF-8 \
-    && locale
-RUN apt-get install software-properties-common -y \
-	&& add-apt-repository universe
-RUN apt update && apt-get install curl -y \
-	&& curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
-RUN apt update \
-	&& apt upgrade -y \
-	&& apt-get install -y ros-${ROS_DISTRO}-ros-base \
-	&& apt-get install -y ros-dev-tools ros-${ROS_DISTRO}-rclpy
-RUN apt install -y ros-${ROS_DISTRO}-urdf-launch \
-		ros-${ROS_DISTRO}-xacro \
-		ros-${ROS_DISTRO}-rqt-robot-steering
+RUN apt-get update
+RUN apt-get install -y curl lsb-release gnupg
 
-# Setup gazebo
-RUN apt-get update \
-	&& apt-get install -y lsb-release gnupg
-RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
-	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null \
-	&& apt-get update \
-	&& apt-get install -y ignition-fortress
+RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
+RUN apt-get update
+RUN apt-get install -y gz-${GZ_VERSION}
 
-RUN apt-get install -y \
-		ros-${ROS_DISTRO}-ros-gz \
-		ros-${ROS_DISTRO}-ros2-control \
-		ros-${ROS_DISTRO}-ros2-controllers \
-		ros-${ROS_DISTRO}-gazebo-ros-pkgs \
-		ros-${ROS_DISTRO}-urdf-tutorial \
-		ros-${ROS_DISTRO}-gazebo-ros2-control \
-		ros-${ROS_DISTRO}-imu-filter-madgwick \
-		ros-${ROS_DISTRO}-topic-tools
-
-# Install Python packages
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    && rm -rf /var/lib/apt/lists/*
+   python3 \
+   python3-pip \
+   python3-venv \
+   libogre-1.12-dev
 
-RUN apt install -y python3-colcon-common-extensions
-
+RUN rosdep update --rosdistro ${ROS_DISTRO}
+        
 WORKDIR ${CONTAINER_WORKDIR}
-#COPY ./docker/install.sh /tmp/install.sh
-#COPY ./poetry.lock .
-#COPY ./pyproject.toml .
-#RUN chmod +x /tmp/install.sh
-#RUN /tmp/install.sh ${VENV_PATH}
-
-# Install torch
-RUN pip3 install torch --index-url https://download.pytorch.org/whl/cpu
-
 VOLUME ${CONTAINER_WORKDIR}
+
+RUN mkdir -p ${WORKSPACE_ROOT}
+COPY ./docker/ros_entrypoint.sh .
+COPY ./ros_robotics ${WORKSPACE_ROOT}
+RUN chmod +x ros_entrypoint.sh && ./ros_entrypoint.sh
+
+COPY ./docker/ros_run.sh ${WORKSPACE_ROOT}
+RUN chmod +x ${WORKSPACE_ROOT}/ros_run.sh
+
+# setup entrypoint
+#ENTRYPOINT ["/ros_entrypoint.sh"]
+#CMD ["bash"]

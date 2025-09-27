@@ -5,8 +5,12 @@ from launch.actions import (
     RegisterEventHandler,
     TimerAction,
 )
-from launch.event_handlers import OnProcessExit, OnProcessStart
-from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
+from launch.event_handlers import OnProcessStart
+from launch.substitutions import (
+    LaunchConfiguration,
+    PathJoinSubstitution,
+    PythonExpression,
+)
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -22,18 +26,19 @@ def generate_launch_description():
     )
     control_file_arg = DeclareLaunchArgument(
         name="control_file",
-        default_value="robot.yaml",
+        default_value="control.yaml",
         description="Control file .yaml",
     )
-    xacro_file_arg = DeclareLaunchArgument(
-        name="xacro_file",
-        description="Name of xacro file (if use_urdf=false)",
+    robot_namespace_arg = DeclareLaunchArgument(
+        name="robot_namespace",
+        default_value="tropy_spot",
+        description="robot namespace",
     )
 
     launch_args = [
         use_sim_time_arg,
         control_file_arg,
-        xacro_file_arg,
+        robot_namespace_arg,
     ]
     control_file = PathJoinSubstitution(
         [
@@ -43,77 +48,66 @@ def generate_launch_description():
         ]
     )
     use_sim_time = LaunchConfiguration("use_sim_time")
-    xacro_file = PathJoinSubstitution(
-        [
-            FindPackageShare(package_name_description),
-            "urdf",
-            LaunchConfiguration("xacro_file"),
-        ]
-    )
+    robot_namespace = LaunchConfiguration("robot_namespace")
 
-    robot_description_content = Command(
-        ["xacro ", xacro_file, " use_sim_time:=", use_sim_time]
+    robot_control_namespace = PythonExpression(
+        ["'/' + '", robot_namespace, f"' + '/{package_name}'"]
+    )
+    robot_description_namespace = PythonExpression(
+        ["'/' + '", robot_namespace, f"' + '/{package_name_description}'"]
     )
 
     ros2_control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
         name="controller_manager",
-        namespace="/tropy_spot_0/control",
+        namespace=robot_control_namespace,
         parameters=[
-            {"robot_description": robot_description_content},
             {"use_sim_time": use_sim_time},
-            {"update_rate": 100},
             control_file,
         ],
         remappings=[
-            ("~/robot_description", "/tropy_spot_0/observation/robot_description"),
-            ("/tf_static", "/tropy_spot_0/observation/tf_static"),
-            ("/tf", "/tropy_spot_0/observation/tf"),
+            (
+                "/robot_description",
+                PythonExpression(
+                    ["'", robot_description_namespace, "' + '/robot_description'"]
+                ),
+            ),
+            (
+                "/tf_static",
+                PythonExpression(
+                    ["'", robot_description_namespace, "' + '/tf_static'"]
+                ),
+            ),
+            (
+                "/tf",
+                PythonExpression(["'", robot_description_namespace, f"' + '/tf'"]),
+            ),
         ],
         output="both",
     )
 
-    joint_state_broadcaster_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        name="joint_state_broadcaster_spawner",
-        namespace="/tropy_spot_0/control",
-        arguments=[
-            "joint_state_broadcaster",
-            "--controller-manager",
-            "/tropy_spot_0/controller_manager",
-            "--switch-timeout",
-            "10",
-        ],
+    effort_control = IncludeLaunchDescription(
+        PathJoinSubstitution(
+            [
+                FindPackageShare(package_name),
+                "launch",
+                "effort_control.launch.py",
+            ]
+        ),
+        launch_arguments={
+            "robot_namespace": robot_namespace,
+        }.items(),
     )
 
-    robot_effort_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        name="robot_effort_controller_spawner",
-        namespace="/tropy_spot_0/control",
-        arguments=[
-            "effort_controller",
-            "--controller-manager",
-            "/tropy_spot_0/controller_manager",
-            "--switch-timeout",
-            "10",
-        ],
-    )
-
-    delay_after_ros2_control_node = RegisterEventHandler(
+    ros2_control_node_handler = RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=ros2_control_node,
-            on_start=[joint_state_broadcaster_spawner],
-        )
-    )
-
-    delay_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=joint_state_broadcaster_spawner,
-            on_exit=[
-                robot_effort_controller_spawner,
+            on_start=[
+                TimerAction(
+                    period=3.0,
+                    actions=[effort_control],
+                )
             ],
         )
     )
@@ -122,7 +116,6 @@ def generate_launch_description():
         [
             *launch_args,
             ros2_control_node,
-            delay_after_ros2_control_node,
-            delay_after_joint_state_broadcaster_spawner,
+            ros2_control_node_handler,
         ]
     )

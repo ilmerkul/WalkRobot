@@ -1,0 +1,5 @@
+trainer:
+  batch_dim: 1024
+  memory_len: 1000000
+  period_roll: 256
+  tensorboard: True

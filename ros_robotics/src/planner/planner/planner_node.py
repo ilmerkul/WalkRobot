@@ -1,6 +1,6 @@
 import numpy as np
 import rclpy
-from control.utils import get_joints
+from description.utils import JOINT_ORDER
 from interface.msg import AgrObs
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
@@ -16,15 +16,17 @@ class PlannerNode(Node):
         )
         self.agr_obs = self.create_subscription(
             AgrObs,
-            "observation/aggregated_observation",
+            "/observation/aggregated",
             self.observation_callback,
             qos_profile=qos,
         )
         self.stand_up_pub = self.create_publisher(
-            AgrObs, "control/stand_up", qos_profile=qos
+            AgrObs, "/control/stand_up", qos_profile=qos
         )
-        self.move_pub = self.create_publisher(AgrObs, "control/move", qos_profile=qos)
-        self.joint_order = get_joints()
+        self.stand_pub = self.create_publisher(
+            AgrObs, "/control/stand", qos_profile=qos
+        )
+        self.joint_order = JOINT_ORDER
         self.MAX_ALLOWED_ANGLE = 0.6
 
     def observation_callback(self, msg: AgrObs):
@@ -34,14 +36,16 @@ class PlannerNode(Node):
         z = orientation.z
         w = orientation.w
 
-        # roll, pitch, _ = self.quaternion_to_euler(x, y, z, w)
-        # stand_up_condition = abs(roll) > self.MAX_ALLOWED_ANGLE or abs(pitch) > self.MAX_ALLOWED_ANGLE
+        roll, pitch, _ = self.quaternion_to_euler(x, y, z, w)
+        stand_up_condition = (
+            abs(roll) > self.MAX_ALLOWED_ANGLE or abs(pitch) > self.MAX_ALLOWED_ANGLE
+        )
         stand_up_condition = True
 
         if stand_up_condition:
             self.stand_up_pub.publish(msg)
         else:
-            self.move_pub.publish(msg)
+            self.stand_pub.publish(msg)
 
     def quaternion_to_euler(self, x, y, z, w):
         sinr_cosp = 2 * (w * x + y * z)

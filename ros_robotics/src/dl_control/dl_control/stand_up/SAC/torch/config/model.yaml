@@ -1,0 +1,4 @@
+actor:
+  hidden_dim: 256
+critic:
+  hidden_dim: 256
